@@ -2,8 +2,15 @@
 import './style.css';
 import { useEffect, useState } from 'react';
 import { IAcademicLeague } from '@/app/lib/models/AcademicLeagues';
+import { Poppins } from 'next/font/google';
 import { FaHeartbeat, FaUserMd, FaStar, FaInfoCircle, FaListUl } from 'react-icons/fa';
 import { ObjectId } from 'bson';
+
+const poppins = Poppins({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['400', '600', '700'],
+  style: ['normal'],
+});
 
 export default function LamePage({ params }: { params: Promise<{ id: string }> }) {
 
@@ -30,13 +37,13 @@ export default function LamePage({ params }: { params: Promise<{ id: string }> }
   }, [params])
   if (!data) {
     return (
-      <main className="lame-main">
+      <main className="lame-main" style={poppins.style}>
         <div className="lame-loading">Carregando...</div>
       </main>
     );
   }
   return (
-    <main className="lame-main">
+    <main className="lame-main" style={poppins.style}>
       <div className="lame-header">
         <div className="lame-logo-circle-pro">
           <img
