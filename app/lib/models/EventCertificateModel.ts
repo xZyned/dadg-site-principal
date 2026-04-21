@@ -1,20 +1,8 @@
 import mongoose, { Schema, Model } from 'mongoose';
-import { ObjectId } from 'mongodb';
-import React from 'react';
+import { ObjectId } from 'bson';
 
-// Definição das opções de pagamento (TypeScript)
-type PaymentOptions =
-    | { isPaid: false; price?: never }
-    | { isPaid: true; price: number };
-
-// Tipo principal do documento do usuário
-export type IEventCertificate = {
-    modalities: {
-        name: string;
-        code: string;
-        description: string;
-    }[];
-    submission_deadline: Date;
+// Interface para o documento do usuário
+export interface IEventCertificate {
     _id: ObjectId;
     eventName: string;
     eventDescription: string;
@@ -27,28 +15,13 @@ export type IEventCertificate = {
     styleFrontTopperText: React.CSSProperties;
     styleFrontBottomText: React.CSSProperties;
     styleNameText: React.CSSProperties;
-    registrationCount: number;
     templatePath: string;
-    templateVersePath?: string;
+    templateVersePath?: string
+}
 
-    // Informações Gerais e Regras
-    eventType: string;
-    documentVersion: string;
-    maxParticipants: number;
-    isOpen: boolean;
-} & PaymentOptions;
-
-// Definição do schema do Mongoose
-const EventCertificateSchema = new Schema<IEventCertificate>(
+// Definição do schema do usuário
+const EventCertificateSchema: Schema<IEventCertificate> = new Schema(
     {
-        modalities: [
-            {
-                name: { type: String, required: true },
-                code: { type: String, required: true },
-                description: { type: String, required: true },
-            },
-        ],
-        submission_deadline: { type: Date, required: true },
         eventName: { type: String, required: true },
         eventDescription: { type: String, required: true },
         styleContainerVerse: {
@@ -62,27 +35,11 @@ const EventCertificateSchema = new Schema<IEventCertificate>(
         styleNameText: { type: Object, required: true },
         templatePath: { type: String, required: true },
         templateVersePath: { type: String, required: false },
-
-        // --- Novos Campos Adicionados ---
-        eventType: { type: String, required: true },
-        registrationCount: { type: Number, required: true, default: 0 },
-        documentVersion: { type: String, required: false, default: "2.0" },
-        maxParticipants: { type: Number, required: true },
-        isOpen: { type: Boolean, required: true, default: true },
-        isPaid: { type: Boolean, required: true },
-        price: {
-            type: Number,
-            required: function (this: any) {
-                return this.isPaid === true;
-            }
-        },
     },
     { timestamps: true, collection: "certificates.events" },
 );
 
 // Criação do modelo com Mongoose
-const EventCertificateModel: Model<IEventCertificate> =
-    mongoose.models.EventCertificate ||
-    mongoose.model<IEventCertificate>('EventCertificate', EventCertificateSchema);
+const EventCertificateModel: Model<IEventCertificate> = mongoose.models.EventCertificate || mongoose.model<IEventCertificate>('EventCertificate', EventCertificateSchema);
 
 export default EventCertificateModel;

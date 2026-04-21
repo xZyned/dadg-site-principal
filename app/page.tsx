@@ -1,235 +1,200 @@
-'use client'
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Poppins } from 'next/font/google';
-import './styles/home.css';
-import UpcomingSchedulePopup from './components/UpcomingSchedulePopup';
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ArrowRight,
+  CalendarDays,
+  FileCheck2,
+  Mail,
+  MessageSquareQuote,
+  UsersRound,
+} from "lucide-react";
+import UpcomingSchedulePopup from "@/app/components/UpcomingSchedulePopup";
+import { InfoCard, PageHero, SectionHeading } from "@/app/components/site-sections";
+import { coordinatorCards } from "@/app/lib/site-content";
 
-const stylePoppins = Poppins({
-  subsets: ['latin', 'latin-ext'],
-  weight: ['400', '600', '700'],
-  style: ['normal'],
-});
-
-interface TypewriterProps {
-  text: string;
-  speed?: number;
-}
-
-function Typewriter({ text, speed = 100 }: TypewriterProps) {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    if (index < text.length) {
-      const randomDelay = speed + Math.random() * 50;
-      const timeoutId = setTimeout(() => setIndex(index + 1), randomDelay);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [index, text, speed]);
-
-  return (
-    <span>
-      {text.slice(0, index)}
-      {index < text.length && <span className="blinking-cursor">|</span>}
-    </span>
-  );
-}
-
-function WaveAnimation() {
-  return (
-    <div className="absolute bottom-0 left-0 w-full pointer-events-none">
-      <svg
-        className="waves"
-        xmlns="http://www.w3.org/2000/svg"
-        xmlnsXlink="http://www.w3.org/1999/xlink"
-        viewBox="0 24 150 28"
-        preserveAspectRatio="none"
-        shapeRendering="auto"
-      >
-        <defs>
-          <path
-            id="gentle-wave"
-            d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
-          />
-        </defs>
-        <g className="parallax">
-          <use xlinkHref="#gentle-wave" x="48" y="0" fill="rgba(9,66,125,0.7)" />
-          <use xlinkHref="#gentle-wave" x="48" y="3" fill="rgba(9,66,125,0.5)" />
-          <use xlinkHref="#gentle-wave" x="48" y="5" fill="rgba(9,66,125,0.3)" />
-          <use xlinkHref="#gentle-wave" x="48" y="7" fill="#09427d" />
-        </g>
-      </svg>
-    </div>
-  );
-}
+const serviceCards = [
+  {
+    href: "/certificados",
+    title: "Certificados",
+    description: "Busca, validação e acesso direto aos certificados.",
+    icon: FileCheck2,
+  },
+  {
+    href: "/eventos",
+    title: "Eventos",
+    description: "Calendário acadêmico e programação do DADG.",
+    icon: CalendarDays,
+  },
+  {
+    href: "/coordenadorias",
+    title: "Coordenadorias",
+    description: "Conheça os núcleos e suas páginas.",
+    icon: UsersRound,
+  },
+  {
+    href: "/ouvidoria",
+    title: "Ouvidoria",
+    description: "Sugestões, reclamações e dúvidas.",
+    icon: MessageSquareQuote,
+  },
+  {
+    href: "/contato",
+    title: "Contato",
+    description: "Redes sociais, e-mail e canais oficiais.",
+    icon: Mail,
+  },
+];
 
 export default function Home() {
   return (
-    <main
-      className="home-background relative flex flex-col items-center justify-center min-h-screen w-full p-8"
-      style={stylePoppins.style}
-    >
+    <div className="space-y-12 pb-8 sm:space-y-14">
       <UpcomingSchedulePopup />
-      <div className="z-10 flex flex-col items-center text-center max-w-4xl mx-auto pb-20 sm:pb-32 px-4">
-        <div className="home-logo-container relative w-24 h-24 sm:w-32 sm:h-32 mb-4 sm:mb-6">
-          <Image
-            src="/logoDadg02.png"
-            alt="Logo Diretório Acadêmico"
-            fill
-            className="rounded-full object-cover"
-          />
+
+      <PageHero
+        eyebrow="DADG Imepac"
+        title="Diretório Acadêmico Diogo Guimarães"
+        titleClassName="text-[var(--brand-800)] dark:text-white"
+        description="Acesso rápido aos principais serviços, páginas institucionais e canais oficiais do DADG."
+        actions={
+          <>
+            <Link
+              href="/certificados"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-900)]"
+            >
+              Abrir certificados
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/eventos"
+              className="inline-flex items-center justify-center rounded-full border border-[rgba(9,66,125,0.16)] bg-white/85 px-5 py-3 text-sm font-semibold text-slate-700 hover:border-[rgba(9,66,125,0.26)] hover:text-slate-950 dark:border-white/10 dark:bg-slate-900/75 dark:text-slate-100 dark:hover:border-white/20 dark:hover:text-white"
+            >
+              Ver eventos
+            </Link>
+          </>
+        }
+        aside={
+          <div className="space-y-3">
+            <div className="glass-panel surface-outline relative overflow-hidden rounded-[28px] border border-white/70 p-5">
+              <div className="relative flex items-center gap-4">
+                <div className="relative h-20 w-20 overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-[0_16px_40px_rgba(7,48,89,0.12)]">
+                  <Image src="/logoDadg02.png" alt="Logo DADG" fill sizes="80px" className="object-cover" />
+                </div>
+                <div>
+                  <p className="text-sm uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400">DADG</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">Imepac Araguari</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              {[
+                ["Certificados", "Busca e validação"],
+                ["Agenda", "Eventos e calendário"],
+                ["Canais", "Contato e ouvidoria"],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="rounded-[22px] border border-white/70 bg-white/78 px-4 py-4 shadow-[0_18px_40px_rgba(7,48,89,0.08)] dark:border-white/10 dark:bg-slate-900/72"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">{label}</p>
+                  <p className="mt-2 text-base font-semibold text-slate-950 dark:text-white">{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        }
+      />
+
+      <section className="page-shell space-y-8">
+        <SectionHeading
+          eyebrow="Acesso rápido"
+          title="Tudo em um clique"
+          description="Entrada direta para as áreas mais importantes do site."
+        />
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {serviceCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <Link key={card.href} href={card.href} className="group">
+                <InfoCard
+                  title={card.title}
+                  description={card.description}
+                  className="h-full transition-transform duration-300 group-hover:-translate-y-1"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-50)] text-[var(--brand-800)]">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      Abrir
+                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                </InfoCard>
+              </Link>
+            );
+          })}
         </div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#09427d] mb-3 sm:mb-4 tracking-wide px-2">
-          <Typewriter text="DIRETÓRIO ACADÊMICO DIOGO GUIMARÃES" speed={100} />
-        </h1>
-        <p className="text-sm sm:text-base md:text-lg text-gray-700 max-w-xl mb-6 sm:mb-8 px-4">
-          Conectando estudantes e promovendo iniciativas inovadoras para o futuro.
-        </p>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8 w-full">
-          <div className="home-card group relative p-3 sm:p-4 rounded-xl overflow-hidden">
-            <div className="relative z-10 flex items-start gap-3 sm:gap-4">
-              <div className="home-card-icon h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#09427d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[#09427d] font-semibold mb-1 sm:mb-2 text-base sm:text-lg md:text-xl group-hover:text-[#073366] transition-colors duration-300">Certificados</h3>
-                <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 leading-relaxed">Acesse e baixe seus certificados de participação em eventos.</p>
-                <Link href="/certificados" className="inline-flex items-center text-[#09427d] hover:text-[#073366] font-medium text-xs sm:text-sm group-hover:translate-x-2 transition-all duration-300">
-                  Ver Certificados
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          </div>
+      </section>
 
-          <div className="home-card group relative p-3 sm:p-4 rounded-xl overflow-hidden">
-            <div className="relative z-10 flex items-start gap-3 sm:gap-4">
-              <div className="home-card-icon h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#09427d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[#09427d] font-semibold mb-1 sm:mb-2 text-base sm:text-lg md:text-xl group-hover:text-[#073366] transition-colors duration-300">Coordenadorias</h3>
-                <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 leading-relaxed">Conheça nossas coordenadorias e suas atividades acadêmicas.</p>
-                <Link href="/coordenadorias" className="inline-flex items-center text-[#09427d] hover:text-[#073366] font-medium text-xs sm:text-sm group-hover:translate-x-2 transition-all duration-300">
-                  Ver Coordenadorias
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          </div>
+      <section className="page-shell space-y-8">
+        <SectionHeading
+          eyebrow="Coordenadorias"
+          title="Áreas de atuação"
+          description="Acesso rápido às coordenadorias do DADG."
+        />
 
-          <div className="home-card group relative p-3 sm:p-4 rounded-xl overflow-hidden">
-            <div className="relative z-10 flex items-start gap-3 sm:gap-4">
-              <div className="home-card-icon h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#09427d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[#09427d] font-semibold mb-1 sm:mb-2 text-base sm:text-lg md:text-xl group-hover:text-[#073366] transition-colors duration-300">Calendário de Eventos</h3>
-                <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 leading-relaxed">Acompanhe os próximos eventos e atividades programadas.</p>
-                <Link href="/eventos" className="inline-flex items-center text-[#09427d] hover:text-[#073366] font-medium text-xs sm:text-sm group-hover:translate-x-2 transition-all duration-300">
-                  Ver Calendário
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          </div>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {coordinatorCards.map((card) => (
+            <Link key={card.slug} href={`/coordenadorias/${card.slug}`} className="group">
+              <article className="glass-panel surface-outline h-full overflow-hidden rounded-[30px] border border-white/70 p-5 transition-transform duration-300 group-hover:-translate-y-1 dark:border-white/10">
+                <div
+                  className="mb-5 rounded-[24px] p-4"
+                  style={{
+                    background: `linear-gradient(135deg, ${card.accent.primary}, ${card.accent.secondary})`,
+                  }}
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] border border-white/20 bg-white/10">
+                    <Image
+                      src={card.imageSrc}
+                      alt={card.shortName}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+                <p className="text-sm font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400">{card.shortName}</p>
+                <h3 className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">{card.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{card.summary}</p>
+              </article>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-          <div className="home-card group relative p-3 sm:p-4 rounded-xl overflow-hidden">
-            <div className="relative z-10 flex items-start gap-3 sm:gap-4">
-              <div className="home-card-icon h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#09427d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[#09427d] font-semibold mb-1 sm:mb-2 text-base sm:text-lg md:text-xl group-hover:text-[#073366] transition-colors duration-300">Ouvidoria</h3>
-                <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 leading-relaxed">Envie sugestões, reclamações ou dúvidas. Sua voz é importante para o DADG.</p>
-                <Link href="/ouvidoria" className="inline-flex items-center text-[#09427d] hover:text-[#073366] font-medium text-xs sm:text-sm group-hover:translate-x-2 transition-all duration-300">
-                  Enviar manifestação
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
+      <section className="page-shell">
+        <div className="overflow-hidden rounded-[32px] bg-slate-950 px-6 py-8 text-white shadow-[0_32px_90px_rgba(4,26,49,0.22)] sm:px-10 sm:py-10">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              <h2 className="text-3xl font-semibold sm:text-4xl">Precisa falar com o DADG?</h2>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-blue-100/78 sm:text-base">
+                Para assuntos importantes, sugestões, reclamações ou dúvidas, use a ouvidoria.
+              </p>
             </div>
-          </div>
 
-          <div className="home-card group relative p-3 sm:p-4 rounded-xl overflow-hidden">
-            <div className="relative z-10 flex items-start gap-3 sm:gap-4">
-              <div className="home-card-icon h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#09427d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[#09427d] font-semibold mb-1 sm:mb-2 text-base sm:text-lg md:text-xl group-hover:text-[#073366] transition-colors duration-300">Inscrição de Eventos</h3>
-                <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 leading-relaxed">Inscreva-se em cursos e eventos abertos pelo Diretório Acadêmico.</p>
-                <Link href="/inscricoes" className="inline-flex items-center text-[#09427d] hover:text-[#073366] font-medium text-xs sm:text-sm group-hover:translate-x-2 transition-all duration-300">
-                  Ver Inscrição de Eventos
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="home-card group relative p-3 sm:p-4 rounded-xl overflow-hidden">
-            <div className="relative z-10 flex items-start gap-3 sm:gap-4">
-              <div className="home-card-icon h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#09427d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[#09427d] font-semibold mb-1 sm:mb-2 text-base sm:text-lg md:text-xl group-hover:text-[#073366] transition-colors duration-300">Sobre Nós</h3>
-                <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 leading-relaxed">Conheça nossa história, missão e valores do Diretório Acadêmico.</p>
-                <Link href="/sobre" className="inline-flex items-center text-[#09427d] hover:text-[#073366] font-medium text-xs sm:text-sm group-hover:translate-x-2 transition-all duration-300">
-                  Saiba mais
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="home-card group relative p-3 sm:p-4 rounded-xl overflow-hidden">
-            <div className="relative z-10 flex items-start gap-3 sm:gap-4">
-              <div className="home-card-icon h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#09427d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[#09427d] font-semibold mb-1 sm:mb-2 text-base sm:text-lg md:text-xl group-hover:text-[#073366] transition-colors duration-300">Contato</h3>
-                <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 leading-relaxed">Redes sociais e e-mail. Fale conosco e acompanhe nossas novidades.</p>
-                <Link href="/contato" className="inline-flex items-center text-[#09427d] hover:text-[#073366] font-medium text-xs sm:text-sm group-hover:translate-x-2 transition-all duration-300">
-                  Entre em contato
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
-            </div>
+            <Link
+              href="/ouvidoria"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[var(--brand-950)]"
+            >
+              Abrir ouvidoria
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
-      </div>
-      <WaveAnimation />
-    </main>
+      </section>
+    </div>
   );
 }

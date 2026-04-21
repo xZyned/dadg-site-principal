@@ -1,83 +1,67 @@
-'use client';
-
-import React from 'react';
-import Link from 'next/link';
-import { FaInstagram } from 'react-icons/fa';
-import './style.css';
-
-const instagramAccounts = [
-  { name: "DADG ImePAC", handle: "@dadg.imepac", url: "https://instagram.com/dadg.imepac" },
-  { name: "CAEP ImePAC", handle: "@caep.imepac", url: "https://instagram.com/caep.imepac" },
-  { name: "CLAM ImePAC", handle: "@clam.imepac", url: "https://instagram.com/clam.imepac" },
-  { name: "CLEVI ImePAC Araguari", handle: "@clevimepacaraguari", url: "https://instagram.com/clevimepacaraguari" },
-  { name: "CAES ImePAC", handle: "@caes.imepac", url: "https://instagram.com/caes.imepac" },
-  { name: "COEPS Araguari", handle: "@coeps.araguari", url: "https://instagram.com/coeps.araguari" },
-];
+import Link from "next/link";
+import { ArrowRight, Instagram, Mail } from "lucide-react";
+import { InfoCard, PageHero } from "@/app/components/site-sections";
+import { socialAccounts } from "@/app/lib/site-content";
 
 export default function ContatoPage() {
   return (
-    <main className="contato-container">
-      <div className="contato-content">
-        <header className="contato-header">
-          <h1 className="contato-title">Contato</h1>
-          <p className="contato-subtitle">
-            Siga-nos no Instagram para ficar por dentro das novidades e entre em contato pelo e-mail.
-          </p>
-        </header>
-
-        <section className="contato-grid">
-          {instagramAccounts.map((account) => (
-            <Link
-              key={account.handle}
-              href={account.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="contato-card instagram-hover"
+    <div className="space-y-12 pb-8 sm:space-y-14">
+      <PageHero
+        eyebrow="Contato"
+        title="Canais oficiais"
+        description="Redes sociais, e-mail e acesso rápido à ouvidoria."
+        aside={
+          <InfoCard title="E-mail principal" description="dadg.imepac@gmail.com">
+            <a
+              href="mailto:dadg.imepac@gmail.com"
+              className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-900)]"
             >
-              <span className="contato-card-icon" aria-hidden>
-                <FaInstagram size={28} />
-              </span>
-              <span className="contato-card-name">{account.name}</span>
-              <span className="contato-card-handle">{account.handle}</span>
-            </Link>
-          ))}
-        </section>
+              <Mail className="h-4 w-4" />
+              Enviar e-mail
+            </a>
+          </InfoCard>
+        }
+      />
 
-        <section className="contato-email-section">
-          <div className="email-shadow-wrapper">
-            <div className="contato-email-card email-hover">
-              <p className="contato-email-label">E-mail</p>
-              <a
-                href="mailto:dadg.imepac@gmail.com"
-                className="contato-email-link"
-              >
-                dadg.imepac@gmail.com
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <section className="contato-ouvidoria-wrap">
-          <Link href="/ouvidoria" className="contato-ouvidoria-card">
-            <p className="contato-ouvidoria-text">
-              Mas se precisar falar de algo mais sério, use nossa ouvidoria.
-            </p>
-            <span className="contato-ouvidoria-link">
-              Ir para Ouvidoria
-              <span className="contato-ouvidoria-arrow" aria-hidden>→</span>
-            </span>
+      <section className="page-shell grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {socialAccounts.map((account) => (
+          <Link
+            key={account.handle}
+            href={account.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group"
+          >
+            <InfoCard title={account.name} description={account.handle} className="h-full transition-transform duration-300 group-hover:-translate-y-1">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-50)] px-3 py-2 text-sm font-semibold text-[var(--brand-800)]">
+                <Instagram className="h-4 w-4" />
+                Abrir Instagram
+              </div>
+            </InfoCard>
           </Link>
-        </section>
-      </div>
+        ))}
+      </section>
 
-      <div className="contato-wave">
-        <svg viewBox="0 0 500 150" preserveAspectRatio="none">
-          <path
-            d="M0.00,49.98 C150.00,150.00 349.12,-50.00 500.00,49.98 L500.00,150.00 L0.00,150.00 Z"
-            fill="#09427d"
-          />
-        </svg>
-      </div>
-    </main>
+      <section className="page-shell">
+        <div className="overflow-hidden rounded-[32px] bg-slate-950 px-6 py-8 text-white shadow-[0_32px_90px_rgba(4,26,49,0.22)] sm:px-10 sm:py-10">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              <h2 className="text-3xl font-semibold sm:text-4xl">Para assuntos mais sensíveis</h2>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-blue-100/78 sm:text-base">
+                Use a ouvidoria quando precisar registrar uma mensagem com mais contexto.
+              </p>
+            </div>
+
+            <Link
+              href="/ouvidoria"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-[var(--brand-950)]"
+            >
+              Abrir ouvidoria
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }
