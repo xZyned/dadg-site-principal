@@ -1,166 +1,84 @@
-'use client';
+import Link from "next/link";
+import { ChevronDown } from "lucide-react";
+import CoordinatorTemplate from "@/app/components/coordinator-template";
+import { SectionHeading } from "@/app/components/site-sections";
+import { coordinatorProfiles } from "@/app/lib/site-content";
+import GetAllNamesAndAcronym from "@/app/lib/models/src/AcademicLeagues/GetAllNamesAndAcronym";
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import './style.css';
-import { IAcademicLeague } from '@/app/lib/models/AcademicLeagues';
-import Link from 'next/link';
+export const dynamic = "force-dynamic";
 
-export default function CLAMPage() {
-    const [activeSection, setActiveSection] = useState<"basic" | "clinic" | null>(null);
-    const [data, setData] = useState<Pick<IAcademicLeague, "_id" | "name" | "acronym" | "type">[]>([]);
+const leagueGroups = [
+  {
+    key: "basic",
+    title: "Ciclo básico",
+    description: "Ligas com foco nas bases da formação médica e na consolidação dos primeiros ciclos.",
+  },
+  {
+    key: "clinic",
+    title: "Ciclo clínico",
+    description: "Ligas voltadas para prática, aprofundamento e experiências ligadas ao cuidado clínico.",
+  },
+] as const;
 
-    useEffect(() => {
-        // Criar partículas
-        const particlesContainer = document.querySelector('.particles');
-        if (particlesContainer) {
-            for (let i = 0; i < 65; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                particle.style.animationDelay = `${Math.random() * 8}s`;
-                particlesContainer.appendChild(particle);
-            }
-        }
-    }, []);
+export default async function CLAMPage() {
+  const leagues = await GetAllNamesAndAcronym();
 
-    useEffect(() => {
-        // Criar partículas
-        const fetchData = async () => {
-            const data = await fetch('/api/get/getAllNamesAndAcronym');
-            if (!data.ok) {
-                alert('Network response was not ok')
-                throw new Error('Network response was not ok');
-            }
-            const json = await data.json();
-            setData(json.data);
-        }
-        fetchData();
-    }, []);
+  return (
+    <CoordinatorTemplate profile={coordinatorProfiles.clam}>
+      <section className="page-shell space-y-8">
+        <SectionHeading
+          eyebrow="Ligas"
+          title="Explore as ligas acadêmicas"
+          description="Abra cada grupo para navegar pelas ligas vinculadas à CLAM e seguir para a página detalhada de cada uma."
+        />
 
-    const toggleSection = (section: "basic" | "clinic") => {
-        setActiveSection(activeSection === section ? null : section);
-    };
+        <div className="grid gap-5 xl:grid-cols-2">
+          {leagueGroups.map((group) => {
+            const items = leagues.filter((league) => league.type === group.key);
 
-    return (
-        <div className="clam-container">
-            <div className="clam-background"></div>
-            <div className="particles"></div>
-            <div className="clam-content">
-                {/* Seção do Logo e Título */}
-                <div className="logo-container">
-                    <div className="logo-circle">
-                        <Image
-                            src="/CLAM.png"
-                            alt="Logo CLAM"
-                            width={180}
-                            height={180}
-                            className="logo-image"
-                        />
-                    </div>
-
-                    <div className="title-container">
-                        <h1 className="title-glow">CLAM</h1>
-                        <h2 className="text-3xl text-white/90 font-medium tracking-wide">
-                            Coordenadoria de Ligas Acadêmicas de Medicina
-                        </h2>
-                    </div>
-                </div>
-
-                {/* Informações */}
-                <div className="info-container">
-                    <h2>Quem Somos</h2>
-                    <p>
-                        A CLAM (Coordenadoria de Ligas Acadêmicas de Medicina) é o órgão responsável por coordenar e integrar todas as ligas acadêmicas da Imepac.
+            return (
+              <details
+                key={group.key}
+                className="glass-panel surface-outline overflow-hidden rounded-[28px] border border-white/70 p-5"
+                open
+              >
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-4 rounded-[22px] bg-white/70 px-4 py-4 text-left [&::-webkit-details-marker]:hidden dark:bg-slate-900/56">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+                      {items.length} liga{items.length === 1 ? "" : "s"}
                     </p>
-                </div>
+                    <h3 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">{group.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">{group.description}</p>
+                  </div>
+                  <ChevronDown className="mt-1 h-5 w-5 flex-none text-slate-500 dark:text-slate-400" />
+                </summary>
 
-                <div className="info-container">
-                    <h2>Nossos Objetivos</h2>
-                    <p>
-                        Promover a integração entre as ligas acadêmicas, fomentar o desenvolvimento acadêmico e científico, e contribuir para a formação médica de excelência.
+                <div className="mt-4 space-y-3">
+                  {items.length === 0 ? (
+                    <p className="rounded-[22px] border border-dashed border-[rgba(9,66,125,0.18)] bg-white/72 px-4 py-5 text-sm font-medium text-slate-500 dark:bg-slate-900/68 dark:text-slate-400">
+                      Nenhuma liga cadastrada neste grupo no momento.
                     </p>
+                  ) : (
+                    <ul className="space-y-3">
+                      {items.map((league) => (
+                        <li key={String(league._id)}>
+                          <Link
+                            href={`/coordenadorias/clam/liga/${String(league._id)}`}
+                            className="block rounded-[22px] border border-white/70 bg-white/80 px-4 py-4 text-sm font-medium text-slate-700 transition-transform duration-300 hover:-translate-y-0.5 hover:text-slate-950 dark:border-white/10 dark:bg-slate-900/72 dark:text-slate-200 dark:hover:text-white"
+                          >
+                            <span className="font-semibold">{league.name}</span>
+                            <span className="ml-2 text-slate-500 dark:text-slate-400">({league.acronym})</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-
-                <div className="collapsible">
-                    <div
-                        className="collapsible-header"
-                        onClick={() => toggleSection('basic')}
-                    >
-                        <span>Ciclo Básico</span>
-                        <span className={`arrow ${activeSection === 'basic' ? 'active' : ''}`}>▼</span>
-                    </div>
-                    <div className={`collapsible-content ${activeSection === 'basic' ? 'active' : ''}`}>
-                        <ul className="liga-list">
-                            {data.filter((value) => value.type === "basic").map((league, index) => (
-                                <li key={index} className="liga-item">
-                                    <Link href={`/coordenadorias/clam/liga/${league._id}`}>
-                                        {league.name} - ({league.acronym})
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-                <div className="collapsible">
-                    <div
-                        className="collapsible-header"
-                        onClick={() => toggleSection('clinic')}
-                    >
-                        <span>Ciclo Clínico</span>
-                        <span className={`arrow ${activeSection === 'clinic' ? 'active' : ''}`}>▼</span>
-                    </div>
-                    <div className={`collapsible-content ${activeSection === 'clinic' ? 'active' : ''}`}>
-                        <ul className="liga-list">
-                            {data.filter((value) => value.type === "clinic").map((league, index) => (
-                                <li key={index} className="liga-item">
-                                    <Link href={`/coordenadorias/clam/liga/${league._id}`}>
-                                        {league.name} - ({league.acronym})
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-                {/*
-
-                <div className="collapsible">
-                    <div 
-                        className="collapsible-header"
-                        onClick={() => toggleSection('basico')}
-                    >
-                        <span>Ciclo Básico</span>
-                        <span className={`arrow ${activeSection === 'basico' ? 'active' : ''}`}>▼</span>
-                    </div>
-                    <div className={`collapsible-content ${activeSection === 'basico' ? 'active' : ''}`}>
-                        <ul className="liga-list">
-                            {ligasBasico.map((liga, index) => (
-                                <li key={index} className="liga-item">{liga}</li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-
-                <div className="collapsible">
-                    <div 
-                        className="collapsible-header"
-                        onClick={() => toggleSection('clinico')}
-                    >
-                        <span>Ciclo Clínico</span>
-                        <span className={`arrow ${activeSection === 'clinico' ? 'active' : ''}`}>▼</span>
-                    </div>
-                    <div className={`collapsible-content ${activeSection === 'clinico' ? 'active' : ''}`}>
-                        <ul className="liga-list">
-                            {ligasClinico.map((liga, index) => (
-                                <li key={index} className="liga-item">{liga}</li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-                */}
-
-            </div>
+              </details>
+            );
+          })}
         </div>
-    );
+      </section>
+    </CoordinatorTemplate>
+  );
 }

@@ -1,82 +1,59 @@
-'use client'
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import './styles.css';
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
+import { InfoCard, PageHero } from "@/app/components/site-sections";
 
-export default function Sobre() {
+export default function SobrePage() {
   return (
-    <div className="sobre-container">
-      <div className="sobre-content">
-        <section className="sobre-section">
-          <h1 className="sobre-title">Sobre Nós</h1>
-          <div className="sobre-grid">
-            <div className="sobre-text-content">
-              <p className="sobre-text">
-                O DADG (Diretório Acadêmico Diogo Guimarães) é uma entidade representativa dos estudantes de Medicina do Imepac,
-                comprometida com a excelência acadêmica e o desenvolvimento profissional de seus membros.
-              </p>
-              <p className="sobre-text">
-                Nossa missão é promover a integração entre os alunos, fomentar o debate médico e contribuir para a formação
-                de profissionais éticos e comprometidos com a saúde da população.
-              </p>
-            </div>
-            <div className="sobre-image">
-              <Image
-                src="/logoDadg02.png"
-                alt="Logo DADG"
-                width={500}
-                height={300}
-                className="sobre-img"
-              />
+    <div className="space-y-12 pb-8 sm:space-y-14">
+      <PageHero
+        eyebrow="Sobre"
+        title="DADG Imepac Araguari"
+        description="Representação estudantil, integração acadêmica e apoio às iniciativas que fortalecem a formação em medicina."
+        aside={
+          <div className="glass-panel surface-outline rounded-[28px] border border-white/70 p-5 dark:border-white/10">
+            <div className="flex items-center gap-4">
+              <div className="relative h-16 w-16 overflow-hidden rounded-[20px] border border-white/70 bg-white">
+                <Image src="/logoDadg02.png" alt="Logo DADG" fill sizes="64px" className="object-cover" />
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400">Institucional</p>
+                <p className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">Diretório Acadêmico Diogo Guimarães</p>
+              </div>
             </div>
           </div>
-        </section>
+        }
+      />
 
-        <section className="sobre-section">
-          <div className="missao-valores">
-            <div className="missao-card" style={{
-              background: "#09427d"
-            }}>
-              <h2 className="missao-title">Nossa Missão</h2>
-              <p className="sobre-text">
-                Representar e defender os interesses dos estudantes de Medicina, promovendo atividades acadêmicas,
-                culturais e sociais que contribuam para a formação integral dos alunos e o fortalecimento da comunidade acadêmica.
-              </p>
-            </div>
+      <section className="page-shell grid gap-5 lg:grid-cols-3">
+        <InfoCard
+          title="Quem somos"
+          description="Entidade representativa dos estudantes de Medicina do Imepac, comprometida com organização, integração e vida acadêmica."
+        />
+        <InfoCard
+          title="Missao"
+          description="Representar e defender os interesses dos estudantes, promovendo atividades acadêmicas, culturais e sociais."
+        />
+        <InfoCard
+          title="Valores"
+          description="Excelência acadêmica, ética, transparência, colaboração e responsabilidade social."
+        />
+      </section>
 
-            <div className="valores-card" style={{
-              background: "#09427d"
-            }}>
-              <h2 className="valores-title">Nossos Valores</h2>
-              <ul className="valores-list">
-                <li className="valores-item">Excelência Acadêmica</li>
-                <li className="valores-item">Compromisso com a Saúde</li>
-                <li className="valores-item">Ética e Transparência</li>
-                <li className="valores-item">Integração e Colaboração</li>
-                <li className="valores-item">Responsabilidade Social</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section className="sobre-section">
-          <h2 className="sobre-title">Nossa História</h2>
-          <p className="sobre-text">
-            Fundado com o propósito de representar os interesses dos estudantes de Medicina do Imepac, o DADG tem se destacado por sua atuação proativa e comprometida com a qualidade do ensino médico. Ao longo dos anos, temos organizado diversos eventos acadêmicos, palestras, workshops e atividades culturais que enriquecem a formação dos nossos alunos.
-          </p>
-        </section>
-
-        <section className="sobre-section contato-section">
-          <h2 className="sobre-title">Entre em Contato</h2>
-          <p className="sobre-text">
-            Fique à vontade para entrar em contato conosco através de nossas redes sociais
-          </p>
-          <Link href="/contato" className="contato-button">
-            Redes Sociais
+      <section className="page-shell">
+        <InfoCard
+          title="História"
+          description="O DADG foi consolidado para fortalecer a voz estudantil e organizar iniciativas que ampliem a experiência universitária e a formação médica."
+        >
+          <Link
+            href="/contato"
+            className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-900)]"
+          >
+            Falar com o DADG
+            <ArrowRight className="h-4 w-4" />
           </Link>
-        </section>
-      </div>
+        </InfoCard>
+      </section>
     </div>
   );
 }

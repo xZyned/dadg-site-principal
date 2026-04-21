@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { addDays, endOfDay, format, startOfDay } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import './UpcomingSchedulePopup.css';
+import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { addDays, endOfDay, format, startOfDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { ArrowRight, CalendarRange, ChevronDown, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CalendarEvent {
   id: string;
@@ -14,41 +15,52 @@ interface CalendarEvent {
   location?: string;
 }
 
-const getEventDate = (dateTime?: string, date?: string): Date | null => {
+function getEventDate(dateTime?: string, date?: string): Date | null {
   if (dateTime) return new Date(dateTime);
+
   if (date) {
-    const [year, month, day] = date.split('-').map(Number);
+    const [year, month, day] = date.split("-").map(Number);
     if (!year || !month || !day) return null;
     return new Date(year, month - 1, day);
   }
+
   return null;
-};
+}
 
 export default function UpcomingSchedulePopup() {
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showAttentionRing, setShowAttentionRing] = useState(true);
 
   const range = useMemo(() => {
     const now = new Date();
-    const start = startOfDay(now);
-    const end = endOfDay(addDays(now, 13));
-    return { start, end };
+    return {
+      start: startOfDay(now),
+      end: endOfDay(addDays(now, 13)),
+    };
   }, []);
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 640px)');
+    const query = window.matchMedia("(max-width: 768px)");
+
     const apply = () => {
-      const mobile = mq.matches;
-      setIsMobile(mobile);
-      setExpanded(!mobile);
+      setIsMobile(query.matches);
     };
+
     apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setShowAttentionRing(false);
+    }, 1600);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {
@@ -56,15 +68,14 @@ export default function UpcomingSchedulePopup() {
 
     const fetchUpcoming = async () => {
       setLoading(true);
+
       try {
-        const startIso = range.start.toISOString();
-        const endIso = range.end.toISOString();
         const res = await fetch(
-          `/api/get/eventsByDate?start=${encodeURIComponent(
-            startIso
-          )}&end=${encodeURIComponent(endIso)}`
+          `/api/get/eventsByDate?start=${encodeURIComponent(range.start.toISOString())}&end=${encodeURIComponent(range.end.toISOString())}`
         );
-        if (!res.ok) throw new Error('Erro ao buscar eventos');
+
+        if (!res.ok) throw new Error("Erro ao buscar eventos");
+
         const data = await res.json();
         setEvents((data.items || []) as CalendarEvent[]);
       } catch {
@@ -78,105 +89,134 @@ export default function UpcomingSchedulePopup() {
   }, [dismissed, range.end, range.start]);
 
   const items = useMemo(() => {
-    const filtered = events
-      .map((e) => ({ event: e, date: getEventDate(e.start.dateTime, e.start.date) }))
-      .filter((x): x is { event: CalendarEvent; date: Date } => !!x.date)
+    return events
+      .map((event) => ({ event, date: getEventDate(event.start.dateTime, event.start.date) }))
+      .filter((value): value is { event: CalendarEvent; date: Date } => Boolean(value.date))
       .filter(({ date }) => date >= range.start && date <= range.end)
       .sort((a, b) => a.date.getTime() - b.date.getTime());
-
-    return filtered;
   }, [events, range.end, range.start]);
-
-  const close = () => {
-    setDismissed(true);
-  };
 
   if (dismissed) return null;
 
   return (
-    <aside className={`upcoming-popup ${expanded ? 'is-expanded' : 'is-collapsed'}`}>
-      <div className="upcoming-popup__header">
+    <aside
+      className={cn(
+        "relative fixed bottom-3 right-3 z-[60] max-h-[calc(100vh-6.5rem)] w-[min(86vw,320px)] overflow-hidden rounded-[24px] border border-white/70 bg-white/82 p-3 shadow-[0_20px_60px_rgba(7,48,89,0.18)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/88",
+        expanded ? "space-y-3" : "space-y-0"
+      )}
+    >
+      {showAttentionRing ? (
+        <div aria-hidden="true" className="popup-attention-ring">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="popup-attention-ring-svg">
+            <rect
+              x="1.5"
+              y="1.5"
+              width="97"
+              height="97"
+              rx="7.5"
+              pathLength="100"
+              className="popup-attention-ring-stroke"
+            />
+          </svg>
+        </div>
+      ) : null}
+
+      <div className="flex items-start justify-between gap-3">
         <button
           type="button"
-          className="upcoming-popup__toggle"
-          onClick={() => setExpanded((v) => !v)}
-          aria-label={expanded ? 'Recolher programação' : 'Expandir programação'}
+          onClick={() => setExpanded((value) => !value)}
+          className="flex flex-1 items-start gap-3 text-left"
+          aria-label={expanded ? "Recolher programacao" : "Expandir programacao"}
         >
-          <span className="upcoming-popup__toggleIcon" aria-hidden="true">
-            {expanded ? '▾' : '▸'}
-          </span>
-          <span className="upcoming-popup__title">
-            Acompanhe a programação das próximas semanas
-          </span>
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--brand-50)] text-[var(--brand-800)]">
+            <CalendarRange className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+              Programacao
+            </p>
+            <p className="mt-1 text-sm font-semibold text-slate-950 dark:text-white">Proximas duas semanas</p>
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+              {format(range.start, "dd 'de' MMM", { locale: ptBR })} ate{" "}
+              {format(range.end, "dd 'de' MMM", { locale: ptBR })}
+            </p>
+          </div>
         </button>
 
-        <button
-          type="button"
-          className="upcoming-popup__close"
-          onClick={close}
-          aria-label="Fechar"
-          title="Fechar"
-        >
-          ×
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setExpanded((value) => !value)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(9,66,125,0.12)] bg-white text-slate-950 dark:border-white/15 dark:bg-white dark:text-black"
+            aria-label={expanded ? "Recolher" : "Expandir"}
+          >
+            <ChevronDown className={cn("h-4 w-4 transition-transform", expanded ? "rotate-180" : "rotate-0")} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setDismissed(true)}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(9,66,125,0.12)] bg-white text-slate-950 dark:border-white/15 dark:bg-white dark:text-black"
+            aria-label="Fechar aviso"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
-      {expanded && (
-        <div className="upcoming-popup__body">
-          <div className="upcoming-popup__sub">
-            <span>
-              {format(range.start, "dd 'de' MMM", { locale: ptBR })} –{' '}
-              {format(range.end, "dd 'de' MMM", { locale: ptBR })}
-            </span>
-            <Link className="upcoming-popup__link" href="/eventos">
-              Abrir calendário
+      {expanded ? (
+        <div className="max-h-[min(18rem,calc(100vh-10rem))] space-y-3 overflow-y-auto border-t border-[rgba(9,66,125,0.08)] pt-3 pr-1">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs leading-5 text-slate-600 dark:text-slate-300">
+              Resumo rapido antes de abrir o calendario.
+            </p>
+            <Link
+              href="/eventos"
+              className="inline-flex flex-none items-center gap-2 rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-white"
+            >
+              Abrir
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
           {loading ? (
-            <div className="upcoming-popup__empty">Carregando…</div>
+            <div className="rounded-[20px] border border-dashed border-[rgba(9,66,125,0.18)] bg-white/72 px-4 py-5 text-center text-sm font-medium text-slate-500 dark:bg-slate-900/68 dark:text-slate-400">
+              Carregando eventos...
+            </div>
           ) : items.length === 0 ? (
-            <div className="upcoming-popup__empty">Sem eventos nas próximas 2 semanas.</div>
+            <div className="rounded-[20px] border border-dashed border-[rgba(9,66,125,0.18)] bg-white/72 px-4 py-5 text-center text-sm font-medium text-slate-500 dark:bg-slate-900/68 dark:text-slate-400">
+              Sem eventos nas proximas 2 semanas.
+            </div>
           ) : (
-            <ul className="upcoming-popup__list">
-              {items.slice(0, 10).map(({ event, date }) => {
-                const timeLabel = event.start.dateTime
-                  ? format(date, 'HH:mm', { locale: ptBR })
-                  : null;
+            <ul className="space-y-3">
+              {items.map(({ event, date }) => {
+                const timeLabel = event.start.dateTime ? format(date, "HH:mm", { locale: ptBR }) : "Dia inteiro";
 
                 return (
-                  <li key={event.id} className="upcoming-popup__item">
-                    <div className="upcoming-popup__date">
+                  <li
+                    key={event.id}
+                    className="rounded-[20px] border border-white/70 bg-white/78 px-4 py-3 shadow-[0_16px_36px_rgba(7,48,89,0.08)] dark:border-white/10 dark:bg-slate-900/72"
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
                       {format(date, "EEE dd/MM", { locale: ptBR })}
-                    </div>
-                    <div className="upcoming-popup__content">
-                      <div className="upcoming-popup__summary">{event.summary}</div>
-                      <div className="upcoming-popup__meta">
-                        {timeLabel ? <span>{timeLabel}</span> : <span>Dia inteiro</span>}
-                        {event.location ? <span className="upcoming-popup__sep">•</span> : null}
-                        {event.location ? <span>{event.location}</span> : null}
-                      </div>
-                    </div>
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-slate-950 dark:text-white">{event.summary}</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
+                      {timeLabel}
+                      {event.location ? ` - ${event.location}` : ""}
+                    </p>
                   </li>
                 );
               })}
-              {items.length > 10 ? (
-                <li className="upcoming-popup__more">
-                  +{items.length - 10} evento(s).{' '}
-                  <Link className="upcoming-popup__linkInline" href="/eventos">
-                    Ver todos
-                  </Link>
-                </li>
-              ) : null}
             </ul>
           )}
 
           {isMobile ? (
-            <div className="upcoming-popup__hint">Toque na setinha para recolher.</div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+              Toque na seta para abrir ou recolher.
+            </p>
           ) : null}
         </div>
-      )}
+      ) : null}
     </aside>
   );
 }
-
