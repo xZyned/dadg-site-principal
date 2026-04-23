@@ -1,144 +1,36 @@
-'use client'
-import React, { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Poppins } from "next/font/google";
-import "../globals.css";
+import Image from "next/image";
+import { ArrowRight, LoaderCircle, Search, ShieldCheck } from "lucide-react";
+import { PageHero, InfoCard } from "@/app/components/site-sections";
+import { ICertificate } from "@/app/lib/models/CertificateModel";
 
-import { ICertificate } from "../lib/models/CertificateModel";
-
-const stylePoppins = Poppins({
-  subsets: ["latin", "latin-ext"],
-  weight: [
-    "100",
-    "200",
-    "300",
-    "400",
-    "500",
-    "600",
-    "700",
-    "800",
-    "900",
-  ],
-  style: ["normal", "italic"],
-});
-
-// Componente do Gradiente de Fundo (apenas tons de azul com mais variações)
-function GradientBackground() {
-  useEffect(() => {
-    // Array com mais tons de azul para uma transição mais nítida
-    const colors = [
-      [0, 51, 102],    // Azul profundo
-      [0, 102, 204],   // Azul médio
-      [0, 128, 255],   // Azul brilhante
-      [30, 144, 255],  // Dodger Blue
-      [70, 130, 180],  // Steel Blue
-      [135, 206, 235], // Sky Blue
-      [173, 216, 230]  // Azul claro
-    ];
-
-    let step = 0;
-    // Índices das cores: [atual esquerda, próxima esquerda, atual direita, próxima direita]
-    const colorIndices = [0, 1, 2, 3];
-    const gradientSpeed = 0.002;
-
-    function updateGradient() {
-      const c0_0 = colors[colorIndices[0]];
-      const c0_1 = colors[colorIndices[1]];
-      const c1_0 = colors[colorIndices[2]];
-      const c1_1 = colors[colorIndices[3]];
-
-      const istep = 1 - step;
-      const r1 = Math.round(istep * c0_0[0] + step * c0_1[0]);
-      const g1 = Math.round(istep * c0_0[1] + step * c0_1[1]);
-      const b1 = Math.round(istep * c0_0[2] + step * c0_1[2]);
-      const color1 = `rgb(${r1},${g1},${b1})`;
-
-      const r2 = Math.round(istep * c1_0[0] + step * c1_1[0]);
-      const g2 = Math.round(istep * c1_0[1] + step * c1_1[1]);
-      const b2 = Math.round(istep * c1_0[2] + step * c1_1[2]);
-      const color2 = `rgb(${r2},${g2},${b2})`;
-
-      const gradientDiv = document.getElementById("gradient");
-      if (gradientDiv) {
-        gradientDiv.style.background = `-webkit-gradient(linear, left top, right top, from(${color1}), to(${color2}))`;
-        gradientDiv.style.background = `-moz-linear-gradient(left, ${color1} 0%, ${color2} 100%)`;
-      }
-
-      step += gradientSpeed;
-      if (step >= 1) {
-        step %= 1;
-        colorIndices[0] = colorIndices[1];
-        colorIndices[2] = colorIndices[3];
-        colorIndices[1] = (colorIndices[1] + Math.floor(1 + Math.random() * (colors.length - 1))) % colors.length;
-        colorIndices[3] = (colorIndices[3] + Math.floor(1 + Math.random() * (colors.length - 1))) % colors.length;
-      }
-    }
-    const intervalId = setInterval(updateGradient, 10);
-    return () => clearInterval(intervalId);
-  }, []);
-  return <div id="gradient" />;
-}
-
-// Componente Loader via Portal
-function Loader() {
-  return ReactDOM.createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="loader animate-spin">
-        <svg className="circular" viewBox="25 25 50 50">
-          <circle
-            className="path"
-            cx="50"
-            cy="50"
-            r="20"
-            fill="none"
-            strokeWidth="2"
-            strokeMiterlimit="10"
-          />
-        </svg>
-      </div>
-    </div>,
-    document.body
-  );
-}
-
-// Componente de Pesquisa e Exibição de Certificados
 function SearchInput() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [noResults, setNoResults] = useState(false);
   const [data, setData] = useState<ICertificate[]>([]);
-  const [/*downloadingId*/, setDownloadingId] = useState<string | null>(null);
 
-  // Restaura estado salvo ao montar o componente
   useEffect(() => {
-    const savedSearch = localStorage.getItem('certificateSearch');
-    const savedResults = localStorage.getItem('certificateResults');
+    const savedSearch = localStorage.getItem("certificateSearch");
+    const savedResults = localStorage.getItem("certificateResults");
 
-    if (savedSearch) {
-      setInputValue(savedSearch);
-    }
+    if (savedSearch) setInputValue(savedSearch);
 
     if (savedResults) {
       try {
-        const parsedResults = JSON.parse(savedResults);
-        setData(parsedResults);
-
-        // Scroll para os resultados após um pequeno delay para garantir que o DOM está renderizado
-        setTimeout(() => {
-          const resultsContainer = document.querySelector('[data-results-container]');
-          if (resultsContainer) {
-            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 100);
-      } catch (e) {
-        // Ignora erro de parsing
+        setData(JSON.parse(savedResults));
+      } catch {
+        localStorage.removeItem("certificateResults");
       }
     }
   }, []);
 
   const handleSearch = async () => {
+    if (!inputValue.trim()) return;
+
     setData([]);
     setIsLoading(true);
     setNoResults(false);
@@ -149,163 +41,162 @@ function SearchInput() {
 
       if (!response.ok) {
         setNoResults(true);
-        localStorage.removeItem('certificateSearch');
-        localStorage.removeItem('certificateResults');
+        localStorage.removeItem("certificateSearch");
+        localStorage.removeItem("certificateResults");
       } else {
         setData(result.data);
-        // Salva o termo de busca e resultados
-        localStorage.setItem('certificateSearch', inputValue);
-        localStorage.setItem('certificateResults', JSON.stringify(result.data));
+        localStorage.setItem("certificateSearch", inputValue);
+        localStorage.setItem("certificateResults", JSON.stringify(result.data));
       }
     } catch {
       setNoResults(true);
-      localStorage.removeItem('certificateSearch');
-      localStorage.removeItem('certificateResults');
+      localStorage.removeItem("certificateSearch");
+      localStorage.removeItem("certificateResults");
     } finally {
       setIsLoading(false);
     }
   };
-  /*
-  const handleDownload = async (certificateId: string, eventName: string, ownerName: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
 
-    setDownloadingId(certificateId);
-    try {
-      const response = await fetch(`/api/get/downloadCertificate/${certificateId}`);
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        alert(errData.message || 'Erro ao baixar certificado. Tente novamente.');
-        return;
-      }
-
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = `${eventName} - ${ownerName}.pdf`;
-      link.click();
-      URL.revokeObjectURL(blobUrl);
-    } catch (error) {
-      console.error('Erro ao baixar:', error);
-      alert('Erro ao baixar certificado. Tente novamente.');
-    } finally {
-      setDownloadingId(null);
-    }
-  };
-  */
   return (
-    <div className="flex flex-col items-center space-y-5">
-      {/* Input com transição suave */}
-      <div className="w-full">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && inputValue.trim() !== "") {
-              handleSearch();
-            }
-          }}
-          className="border border-blue-800 p-2.5 sm:p-3 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 shadow-sm text-sm sm:text-base"
-          placeholder="Pressione 'Enter' para pesquisar..."
-        />
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="relative flex-1">
+          <label htmlFor="certificate-search" className="sr-only">
+            Pesquisar certificado
+          </label>
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+          <input
+            id="certificate-search"
+            name="certificateSearch"
+            type="text"
+            value={inputValue}
+            onChange={(event) => setInputValue(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") handleSearch();
+            }}
+            className="certificate-search-input h-14 w-full rounded-full border border-[rgba(9,66,125,0.14)] bg-white pl-12 pr-4 text-sm font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--brand-800)] focus:ring-4 focus:ring-[rgba(9,66,125,0.08)] dark:border-white/10 dark:bg-white dark:text-slate-950 dark:placeholder:text-slate-400"
+            placeholder="Digite nome, e-mail, CPF ou evento"
+            autoComplete="off"
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSearch}
+          className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-slate-950 px-6 text-sm font-semibold text-white hover:bg-[var(--brand-900)]"
+        >
+          Buscar
+          <ArrowRight className="h-4 w-4" />
+        </button>
       </div>
-      {isLoading && <Loader />}
-      {noResults && (
-        <div className="mt-4 text-red-600 font-medium">
+
+      {isLoading ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex items-center justify-center rounded-[26px] border border-white/70 bg-white px-5 py-10 text-sm font-medium text-slate-500 shadow-[0_18px_40px_rgba(7,48,89,0.08)] dark:border-white/10 dark:bg-slate-900/72 dark:text-slate-400"
+        >
+          <LoaderCircle className="mr-3 h-5 w-5 animate-spin" />
+          Carregando certificados...
+        </div>
+      ) : null}
+
+      {noResults ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-[26px] border border-dashed border-[rgba(9,66,125,0.18)] bg-white px-5 py-10 text-center text-sm font-medium text-slate-500 dark:bg-slate-900/68 dark:text-slate-400"
+        >
           Nenhum resultado encontrado.
         </div>
-      )}
-      {!noResults && data.length > 0 && (
-        <div className="w-full max-h-64 overflow-auto space-y-2 mt-4" data-results-container>
+      ) : null}
+
+      {!noResults && data.length > 0 ? (
+        <div className="space-y-4">
           {data.map((certificate) => (
-            <div
+            <Link
               key={String(certificate._id)}
-              className="border border-gray-200 rounded-xl p-3 sm:p-4 bg-gray-50 transition duration-300 ease-in-out hover:bg-blue-50 hover:shadow-lg relative group"
+              href={`/certificados/meuCertificado/${String(certificate._id)}`}
+              className="block rounded-[26px] border border-white/70 bg-white p-5 shadow-[0_18px_40px_rgba(7,48,89,0.08)] transition-transform duration-300 hover:-translate-y-1 dark:border-white/10 dark:bg-slate-900/80"
             >
-              <Link
-                prefetch={true}
-                href={`/certificados/meuCertificado/${String(certificate._id)}`}
-                className="block"
-              >
-                <h1 className="font-extrabold text-sm sm:text-base md:text-lg text-blue-900 break-words pr-20">
-                  {certificate.eventName}
-                </h1>
-                <div className="flex flex-col sm:flex-row justify-between text-xs sm:text-sm text-gray-700 mt-2 gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="uppercase tracking-wide text-xs">Titular</p>
-                    <p className="font-medium break-words">{certificate.ownerName}</p>
-                  </div>
-                  <div className="min-w-0 flex-1 sm:flex-none">
-                    <p className="uppercase tracking-wide text-xs">Código Verificador</p>
-                    <p className="font-medium break-all text-xs">{String(certificate._id)}</p>
-                  </div>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">Certificado</p>
+                  <h3 className="mt-2 text-xl font-semibold text-slate-950 dark:text-white">{certificate.eventName}</h3>
                 </div>
-              </Link>
-              {/*
-              <button
-                onClick={(e) => handleDownload(String(certificate._id), certificate.eventName, certificate.ownerName, e)}
-                disabled={downloadingId === String(certificate._id)}
-                className="absolute top-3 right-3 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg z-10"
-                title="Baixar certificado"
-              >
-              {downloadingId === String(certificate._id) ? (
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              )}
-            </button>
-                  */}
-            </div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-50)] px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--brand-800)]">
+                  Abrir
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-4 text-sm text-slate-600 dark:text-slate-300 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Titular</p>
+                  <p className="mt-2 font-medium text-slate-800 dark:text-slate-100">{certificate.ownerName}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Código verificador</p>
+                  <p className="mt-2 break-all font-medium text-slate-800 dark:text-slate-100">{String(certificate._id)}</p>
+                </div>
+              </div>
+            </Link>
           ))}
         </div>
-      )
-      }
-    </div >
+      ) : null}
+    </div>
   );
 }
 
-// Página principal com o gradiente de fundo e o conteúdo sobreposto
-export default function Home() {
+export default function CertificadosPage() {
   return (
-    <div className="relative min-h-screen w-full">
-      {/* Componente de fundo com gradiente */}
-      <GradientBackground />
-      {/* Conteúdo centralizado e sobreposto ao fundo */}
-      <main className={`absolute inset-0 flex items-center justify-center p-4 sm:p-6 ${stylePoppins.className}`}>
-        <div className="w-full max-w-md sm:max-w-lg bg-white shadow-2xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 z-10">
-          <article className="space-y-4 sm:space-y-5 text-center">
-            <div className="flex items-center justify-center">
-              <Image
-                className="rounded-full"
-                width={80}
-                height={80}
-                alt="Logo"
-                src="/logoDadg02.png"
-                style={{ width: 'auto', height: 'auto' }}
-              />
+    <div className="space-y-12 pb-8 sm:space-y-14">
+      <PageHero
+        eyebrow="Certificados"
+        title="Busca e validação"
+        description="Pesquise certificados por nome, e-mail, CPF ou nome do evento."
+        aside={
+          <div className="glass-panel surface-outline rounded-[28px] border border-white/70 p-5">
+            <div className="flex items-center gap-4">
+              <div className="relative h-16 w-16 overflow-hidden rounded-[20px] border border-white/70 bg-white">
+                <Image src="/logoDadg02.png" alt="Logo DADG" fill sizes="64px" className="object-cover" />
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-[0.32em] text-slate-500 dark:text-slate-400">Acesso direto</p>
+                <p className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">Consulta oficial de certificados</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-blue-900 px-2">
-                {`Validação de Certificados`.toLocaleUpperCase()}
-              </h1>
-              <h2 className="font-medium text-gray-600 text-xs sm:text-sm md:text-base mt-2">
-                Pesquise usando: Nome
-              </h2>
-            </div>
-          </article>
-          <article className="mt-4 sm:mt-6">
-            <SearchInput />
-          </article>
+          </div>
+        }
+      />
+
+      <section className="page-shell grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="glass-panel surface-outline rounded-[32px] border border-white/70 p-6 sm:p-7">
+          <SearchInput />
         </div>
-      </main>
+
+        <div className="space-y-5">
+          <InfoCard
+            title="Como pesquisar"
+            description="Use nome, e-mail, CPF ou o nome do evento. Ao encontrar o certificado, abra para visualizar e baixar."
+          />
+          <InfoCard title="Validação" description="Cada certificado exibe um código verificador único para consulta e conferência.">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-50)] px-3 py-2 text-sm font-semibold text-[var(--brand-800)]">
+              <ShieldCheck className="h-4 w-4" />
+              Código individual
+            </div>
+          </InfoCard>
+          <InfoCard title="Atendimento" description="Se o certificado não aparecer ou houver alguma divergência, use a ouvidoria.">
+            <Link
+              href="/ouvidoria"
+              className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-900)]"
+            >
+              Abrir ouvidoria
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </InfoCard>
+        </div>
+      </section>
     </div>
   );
 }
