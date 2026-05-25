@@ -14,7 +14,7 @@ type CoordinatorTemplateProps = {
 
 export default function CoordinatorTemplate({ profile, children }: CoordinatorTemplateProps) {
   return (
-    <div className="space-y-12 pb-8 sm:space-y-16">
+    <div className="space-y-12 pt-28 pb-8 sm:space-y-16">
       <section className="page-shell">
         <div className="glass-panel surface-outline relative overflow-hidden rounded-[36px] border border-white/60 px-6 py-8 sm:px-10 sm:py-12 dark:border-white/10">
           <div

@@ -28,7 +28,8 @@ export async function proxy(req: NextRequest) {
     }
     return await auth0.middleware(req)
   }
-  if (req.nextUrl.pathname.startsWith("/auth/")) {
+  // Suporte ao fluxo de login/logout do Auth0 no frontend
+  if (req.nextUrl.pathname.startsWith("/auth/") || req.nextUrl.pathname.startsWith("/api/auth/")) {
     return await auth0.middleware(req)
   }
   return NextResponse.next()

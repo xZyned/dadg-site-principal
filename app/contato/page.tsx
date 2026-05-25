@@ -5,7 +5,7 @@ import { socialAccounts } from "@/app/lib/site-content";
 
 export default function ContatoPage() {
   return (
-    <div className="space-y-12 pb-8 sm:space-y-14">
+    <div className="space-y-12 pt-28 pb-8 sm:space-y-14">
       <PageHero
         eyebrow="Contato"
         title="Canais oficiais"
