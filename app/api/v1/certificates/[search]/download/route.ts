@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { connectToDatabase } from "@/lib/mongodb";
-import CertificateModel from "@/lib/models/CertificateModel";
+import { connectToDatabase } from "@/app/lib/mongodb";
+import CertificateModel from "@/app/lib/models/CertificateModel";
 
 
 export const dynamic = 'force-dynamic'

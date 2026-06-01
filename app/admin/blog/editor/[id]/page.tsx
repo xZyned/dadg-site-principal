@@ -137,9 +137,7 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
       [{'list': 'ordered'}, {'list': 'bullet'}],
       ['link', 'image', 'video'],
       ['clean']
-    ],
-      setSaving(false);
-    }
+    ]
   };
 
   if (isFetching) {
@@ -164,10 +162,39 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
               <ArrowLeft size={16} /> Voltar ao Painel
             </Link>
             <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-              {isNew ? "Criar Novo Artigo" : "Editar Artigo"}
+              {isNewPost ? "Criar Novo Artigo" : "Editar Artigo"}
             </h1>
           </div>
-                <select
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="glass-panel-strong p-6 md:p-8 rounded-3xl border border-white/60 dark:border-slate-800 shadow-sm space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Título do Artigo *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.title}
+                  onChange={handleTitleChange}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-slate-900 dark:text-white transition-all"
+                  placeholder="Ex: Como organizar seus estudos..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Slug (URL amigável) *</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.slug}
+                  onChange={(e) => setFormData({...formData, slug: e.target.value})}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-slate-900 dark:text-white transition-all"
+                  placeholder="como-organizar-seus-estudos"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Status</label>                <select
                   value={formData.status}
                   onChange={(e) => setFormData({...formData, status: e.target.value})}
                   className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-600 outline-none text-slate-900 dark:text-white transition-all"
@@ -264,8 +291,8 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
                 )}
               </button>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );

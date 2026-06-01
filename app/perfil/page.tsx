@@ -16,6 +16,8 @@ import {
   LogOut,
   Camera,
   BookOpen,
+  QrCode,
+  MapPin,
 } from "lucide-react";
 import BlogCard, { BlogPostData } from "@/app/components/BlogCard";
 
@@ -31,6 +33,13 @@ interface EventHistory {
   isOpen: boolean;
   enrolledAt: string;
   certificateId: string | null;
+  /** Token do QR Code para o ingresso físico */
+  qrToken: string | null;
+  /** Se a presença do aluno já foi confirmada pelo admin */
+  checkedIn: boolean;
+  checkedInAt: string | null;
+  /** Se o admin já liberou os certificados automáticos para este evento */
+  certificateReleased: boolean;
 }
 
 interface UserProfile {
@@ -285,6 +294,7 @@ export default function PerfilPage() {
 function EventHistoryCard({ event, detailed = false, onCancelSuccess }: { event: EventHistory; detailed?: boolean; onCancelSuccess?: (eventId: string) => void }) {
   const [isCanceling, setIsCanceling] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showQr, setShowQr] = useState(false);
 
   const enrollDate = new Date(event.enrolledAt).toLocaleDateString("pt-BR", {
     day: "2-digit",
@@ -297,9 +307,7 @@ function EventHistoryCard({ event, detailed = false, onCancelSuccess }: { event:
     setIsCanceling(true);
     setErrorMsg("");
     try {
-      const res = await fetch(`/api/v1/events/${event.eventId}/registration`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/v1/events/${event.eventId}/registration`, { method: "DELETE" });
       const data = await res.json();
       if (res.ok) {
         onCancelSuccess?.(event.eventId);
@@ -312,6 +320,10 @@ function EventHistoryCard({ event, detailed = false, onCancelSuccess }: { event:
       setIsCanceling(false);
     }
   };
+
+  const qrImageUrl = event.qrToken
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(event.qrToken)}&bgcolor=0f172a&color=ffffff&margin=8`
+    : null;
 
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-white/90 dark:border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(243,247,252,0.94)_100%)] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.92)_0%,rgba(2,6,23,0.86)_100%)] p-5 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
@@ -343,6 +355,16 @@ function EventHistoryCard({ event, detailed = false, onCancelSuccess }: { event:
             <Clock className="w-3 h-3 text-slate-400" />
             <span className="text-xs text-slate-500 dark:text-slate-400">Inscrito em {enrollDate}</span>
           </div>
+          {/* Status de presença */}
+          {event.checkedIn ? (
+            <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              <MapPin className="w-3 h-3" />Presença confirmada
+            </span>
+          ) : event.isOpen ? (
+            <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+              <QrCode className="w-3 h-3" />Apresente o QR Code na entrada
+            </span>
+          ) : null}
           {event.eventType && (
             <span className="inline-block mt-1.5 text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
               {event.eventType}
@@ -351,26 +373,54 @@ function EventHistoryCard({ event, detailed = false, onCancelSuccess }: { event:
         </div>
       </div>
 
+      {/* QR Code do Ingresso — exibido se inscrito e evento aberto sem presença ainda */}
+      {qrImageUrl && event.isOpen && !event.checkedIn && (
+        <div className="mt-4">
+          <button
+            onClick={() => setShowQr(!showQr)}
+            className="flex items-center justify-center gap-2 w-full rounded-xl border border-blue-200 dark:border-blue-800/50 text-blue-600 dark:text-blue-400 text-sm font-semibold py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+          >
+            <QrCode className="w-4 h-4" />
+            {showQr ? "Ocultar QR Code do Ingresso" : "Ver QR Code do Ingresso"}
+          </button>
+          {showQr && (
+            <div className="mt-3 flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-900 border border-slate-700">
+              <p className="text-xs text-slate-400 text-center">Apresente este código na entrada do evento</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={qrImageUrl}
+                alt="QR Code do Ingresso"
+                width={180}
+                height={180}
+                className="rounded-lg"
+              />
+              <p className="text-xs text-slate-500 font-mono break-all text-center">{event.qrToken?.slice(0, 18)}...</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Ações: Certificado, Aguardando, ou Cancelar/Ver eventos */}
       {event.certificateId ? (
         <Link href={`/certificados?search=${encodeURIComponent(event.eventName)}`} className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold py-2.5 transition-all shadow-sm hover:shadow-md">
-          <Award className="w-4 h-4" />
-          Ver Certificado
-          <ExternalLink className="w-3 h-3" />
+          <Award className="w-4 h-4" />Ver Certificado<ExternalLink className="w-3 h-3" />
         </Link>
+      ) : event.certificateReleased && !event.certificateId ? (
+        <div className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 text-amber-600 dark:text-amber-400 text-xs font-medium py-2.5">
+          <Clock className="w-3.5 h-3.5" />Certificados liberados — verifique em breve
+        </div>
       ) : !event.isOpen ? (
         <div className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-medium py-2.5">
-          <Clock className="w-3.5 h-3.5" />
-          Certificado ainda não emitido
+          <Clock className="w-3.5 h-3.5" />Certificado ainda não emitido
         </div>
       ) : (
         <div className="mt-4">
           {errorMsg && <p className="text-xs text-red-500 mb-2 text-center">{errorMsg}</p>}
           <div className="flex gap-2">
             <Link href="/eventos" className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-blue-200 dark:border-blue-900/50 text-blue-600 dark:text-blue-400 text-sm font-medium py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
-              <Calendar className="w-4 h-4" />
-              Ver eventos
+              <Calendar className="w-4 h-4" />Ver eventos
             </Link>
-            <button 
+            <button
               onClick={handleCancel}
               disabled={isCanceling}
               className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-sm font-medium py-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all disabled:opacity-50"

@@ -1,5 +1,5 @@
-import { connectToDatabase } from "@/lib/mongodb";
-import AcademicLeagueModel, { IAcademicLeague } from "@/lib/models/AcademicLeagues";
+import { connectToDatabase } from "@/app/lib/mongodb";
+import AcademicLeagueModel, { IAcademicLeague } from "@/app/lib/models/AcademicLeagues";
 //
 //
 export async function GET() {

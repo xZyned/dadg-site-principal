@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { connectToDatabase } from "@/lib/mongodb";
-import CertificateModel from "@/lib/models/CertificateModel";
-import { IEventCertificate } from "@/lib/models/EventCertificateModel";
+import { connectToDatabase } from "@/app/lib/mongodb";
+import CertificateModel from "@/app/lib/models/CertificateModel";
+import { IEventCertificate } from "@/app/lib/models/EventCertificateModel";
 //  export async function GET(req: NextRequest, { params }: { params: { search: string } }) {
 
 export const dynamic = 'force-dynamic'

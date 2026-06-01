@@ -109,7 +109,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <CustomCursor />
           <Preloader />
           <UpcomingSchedulePopup />
-          <UserProvider tokenVar={session?.tokenSet.idToken || undefined}>
+          <UserProvider tokenVar={session?.tokenSet.accessToken || undefined}>
             <MenuDrawer blogEnabled={blogEnabled} />
             <MobileBottomNav blogEnabled={blogEnabled} />
             <div className="main-content pb-16 md:pb-0 flex flex-col min-h-screen">

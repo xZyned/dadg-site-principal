@@ -1,10 +1,10 @@
 /* eslint-disable */
 import { NextRequest } from "next/server";
 import mongoose from "mongoose";
-import { connectToDatabase } from "@/lib/mongodb";
-import CertificateModel from "@/lib/models/CertificateModel";
+import { connectToDatabase } from "@/app/lib/mongodb";
+import CertificateModel from "@/app/lib/models/CertificateModel";
 import AWS from "aws-sdk";
-import { IEventCertificate } from "@/lib/models/EventCertificateModel";
+import { IEventCertificate } from "@/app/lib/models/EventCertificateModel";
 //  export async function GET(req: NextRequest, { params }: { params: { search: string } }) {
 
 export const dynamic = 'force-dynamic'

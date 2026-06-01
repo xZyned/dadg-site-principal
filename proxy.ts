@@ -15,16 +15,20 @@ export async function proxy(req: NextRequest) {
   // Algumas rotas não precisam de proteção, porque são nativas Nextjs e iriam falsear o rate limit.
   const isStaticResource = /\/_next\/static|\/_next\/image|turbopack|favicon\.ico|\.(svg|png|jpg|jpeg|gif|webp|js|css|woff2?)$/i.test(req.nextUrl.pathname);
   if (!isStaticResource) {
+    // DDoS protection para rotas sensíveis: Registration limite restrito a 3 requisições
+    const isRegistrationRoute = /^\/api\/v1\/events\/.*\/registration/i.test(req.nextUrl.pathname);
+    const limitToApply = isRegistrationRoute ? 3 : Number(RATE_LIMIT);
+    
     // Como optamos para um valor estático de rateLimit para todos, tenho que tirar alguns arquivos fundamentais da aplicação
     // E isolar apenas a infraestrutura.
-    const { canAccess } = await rateLimit(req, Number(RATE_LIMIT))
+    const { canAccess } = await rateLimit(req, limitToApply)
     if (!canAccess) {
       return new Response("Too Many Requests", { status: 429 })
     }
   }
   if (req.nextUrl.pathname.startsWith("/panel")) {
     if (!session) {
-      return await auth0.startInteractiveLogin({ returnTo: req.nextUrl.toString() })
+      return NextResponse.redirect(new URL(`/auth/login?returnTo=${encodeURIComponent(req.nextUrl.pathname)}`, req.url));
     }
     return await auth0.middleware(req)
   }

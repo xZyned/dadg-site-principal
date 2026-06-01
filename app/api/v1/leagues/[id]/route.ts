@@ -1,5 +1,5 @@
-import AcademicLeagueModel from "@/lib/models/AcademicLeagues";
-import { connectToDatabase } from "@/lib/mongodb";
+import AcademicLeagueModel from "@/app/lib/models/AcademicLeagues";
+import { connectToDatabase } from "@/app/lib/mongodb";
 import { NextRequest } from "next/server";
 import { ObjectId } from "bson"
 //

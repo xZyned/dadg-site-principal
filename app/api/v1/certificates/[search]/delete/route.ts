@@ -1,7 +1,7 @@
-import { connectToDatabase } from "@/lib/mongodb";
+import { connectToDatabase } from "@/app/lib/mongodb";
 import { NextRequest } from "next/server";
 import { ObjectId } from "bson";
-import CertificateModel from "@/lib/models/CertificateModel";
+import CertificateModel from "@/app/lib/models/CertificateModel";
 
 export async function DELETE(req: NextRequest, {
     params,

@@ -16,6 +16,7 @@ export interface BlogPostData {
   commentsCount: number;
   publishedAt?: string;
   createdAt: string;
+  status?: "DRAFT" | "PUBLISHED";
 }
 
 interface BlogCardProps {

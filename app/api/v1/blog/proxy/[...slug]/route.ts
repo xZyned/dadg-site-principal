@@ -26,7 +26,7 @@ async function proxyRequest(req: NextRequest, params: { slug: string[] }) {
     if (session.user.email) {
       headers.set("X-User-Email", session.user.email);
     }
-    const token = session.tokenSet?.accessToken || session.tokenSet?.idToken;
+    const token = session.tokenSet?.accessToken;
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
