@@ -7,14 +7,14 @@
  * Este proxy pega o accessToken da sessão e repassa ao backend como Bearer.
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth0 } from "@/app/src/lib/auth0/Auth0Client";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const session = await auth0.getSession();
   if (!session?.user || !session.tokenSet?.accessToken) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });

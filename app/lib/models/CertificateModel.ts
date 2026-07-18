@@ -1,18 +1,20 @@
 import mongoose, { Schema, Model } from 'mongoose';
 import { IEventCertificate } from './EventCertificateModel';
-import { ObjectId } from 'mongoose';
+import { ObjectId } from 'mongodb';
 
-// Interface para o documento do certificado
+// Interface para o documento do usuário
 export interface ICertificate {
     _id: ObjectId;
-    ownerId: ObjectId;
+    ownerId?: ObjectId;
     ownerName: string;
-    ownerCpf: string;
+    ownerCpf: string | null;
     eventName: string;
-    ownerEmail: string;
+    ownerEmail: string | null;
+    certificateHours: string;
     certificatePath?: string;
     frontTopperText?: string;
     frontBottomText?: string;
+    eventId: ObjectId;
     isReady?: boolean;
     onlyImage?: boolean;
     verse: {
@@ -22,26 +24,26 @@ export interface ICertificate {
         headers?: string[];
         rows?: [string[]];
     };
-    certificateHours: string;
-    eventId: ObjectId;
+}
+export interface ICertificateWithEventPopulate extends Omit<ICertificate, 'eventId'> {
+    eventId: IEventCertificate;
 }
 
-export interface ICertificateWithEventIdPopulate extends Omit<ICertificate, "eventId"> {
-    eventId: IEventCertificate
-}
+// Compatibilidade com consumidores anteriores ao PR #26.
+export type ICertificateWithEventIdPopulate = ICertificateWithEventPopulate;
 
-// Definição do esquema do certificado
+// Definição do schema do usuário
 const CertificateSchema: Schema<ICertificate> = new Schema(
     {
-        ownerId: { type: Schema.Types.ObjectId, required: true },
+        ownerId: { type: Schema.Types.ObjectId, required: false },
         ownerName: { type: String, required: true },
         ownerCpf: { type: String, required: true },
         eventName: { type: String, required: true },
         ownerEmail: { type: String, required: true },
         frontTopperText: { type: String },
         frontBottomText: { type: String },
-        certificatePath: { type: Schema.Types.Mixed, required: false },
         certificateHours: { type: String, required: true },
+        certificatePath: { type: String, required: false },
         onlyImage: { type: Boolean, required: false, default: false },
         isReady: { type: Boolean, required: false, default: false },
         eventId: { type: Schema.Types.ObjectId, required: true, ref: "EventCertificate" },
@@ -57,7 +59,7 @@ const CertificateSchema: Schema<ICertificate> = new Schema(
     { timestamps: true, collection: "certificates.datails" }
 );
 
-// Criação do modelo no Mongoose
+// Criação do modelo com Mongoose
 const CertificateModel: Model<ICertificate> = mongoose.models.Certificate || mongoose.model<ICertificate>('Certificate', CertificateSchema);
 
 export default CertificateModel;

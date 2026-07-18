@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { MessageCircle, Heart, Bookmark, Send, Loader2, User } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 interface BlogComment {
   _id: string;
@@ -22,8 +21,6 @@ interface InteractionsProps {
 }
 
 export default function BlogCommentSection({ postId, initialLikes, initialComments, isLoggedIn }: InteractionsProps) {
-  const router = useRouter();
-  
   // Status do Usuário Logado para esse Post
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);

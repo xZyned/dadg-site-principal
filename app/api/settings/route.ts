@@ -12,7 +12,7 @@ export async function GET() {
       return NextResponse.json(data);
     }
     return NextResponse.json({ blogEnabled: true });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ blogEnabled: true });
   }
 }

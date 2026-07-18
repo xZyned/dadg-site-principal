@@ -3,6 +3,8 @@ import { ReactNode } from "react";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminBlogLayout({ children }: { children: ReactNode }) {
   try {
     const res = await fetch(`${BACKEND_URL}/api/v1/settings`, { cache: "no-store" });

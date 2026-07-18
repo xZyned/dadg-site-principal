@@ -10,7 +10,6 @@ import {
     Info,
     Gift,
     X,
-    User,
     CreditCard,
     Mail,
 } from "lucide-react";

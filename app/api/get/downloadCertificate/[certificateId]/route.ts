@@ -8,7 +8,7 @@ import AWS from "aws-sdk";
 import { IEventCertificate } from "@/app/lib/models/EventCertificateModel";
 import { PDFDocument, PDFPage, rgb, StandardFonts } from "pdf-lib";
 import { ObjectId } from "bson";
-import { ICertificateWithEventIdPopulate } from "@/app/lib/models/CertificateModel";
+import { ICertificateWithEventPopulate } from "@/app/lib/models/CertificateModel";
 
 export const dynamic = 'force-dynamic'
 
@@ -132,7 +132,7 @@ const parseFontSize = (fontSize?: string | number, defaultSize: number = 12): nu
 // Renderiza texto na frente do certificado
 const drawCertificateText = async (
     page: PDFPage,
-    certificate: ICertificateWithEventIdPopulate,
+    certificate: ICertificateWithEventPopulate,
     width: number,
     height: number
 ) => {
@@ -309,7 +309,7 @@ export async function GET(req: NextRequest, {
         const certificate = await CertificateModel.findOne({
             _id: certificateId,
             isReady: true,
-        }).populate<{ eventId: IEventCertificate }>("eventId") as ICertificateWithEventIdPopulate | null;
+        }).populate<{ eventId: IEventCertificate }>("eventId") as ICertificateWithEventPopulate | null;
 
         if (!certificate) {
             return Response.json({ message: "Certificado não encontrado." }, { status: 404 });

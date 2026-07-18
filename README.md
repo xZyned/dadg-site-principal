@@ -12,13 +12,13 @@
 npm install
 
 # 2. Configure o .env.local (copie o template abaixo)
-# 3. Inicie o BACKEND primeiro (porta 3001)
+# 3. Inicie o BACKEND primeiro (porta 3000)
 # 4. Inicie o frontend
 npm run dev
-# → http://localhost:3000
+# → http://localhost:3001
 ```
 
-> ⚠️ **O backend `dadg-certificates` deve estar rodando em `http://localhost:3001`  antes do frontend.**
+> ⚠️ **O backend `dadg-certificates` deve estar rodando em `http://localhost:3000` antes do frontend.**
 
 ---
 
@@ -28,9 +28,9 @@ Este é o **frontend** — não acessa o banco de dados diretamente.
 Todas as operações de eventos, inscrições e perfil são delegadas ao **backend** via HTTP.
 
 ```
-Frontend (porta 3000)
+Frontend (porta 3001)
     ↓ HTTP fetch com Bearer Token
-Backend dadg-certificates (porta 3001)
+Backend dadg-certificates (porta 3000)
     ↓ Mongoose
 MongoDB Atlas
 ```
@@ -43,12 +43,11 @@ AUTH0_DOMAIN=dev-qd3gyqp1h6nacnx8.us.auth0.com
 AUTH0_CLIENT_ID=vDinq9GGzcTShCYjKg8DG88YQvGvxg0y
 AUTH0_CLIENT_SECRET=<secret>
 AUTH0_SECRET=<random>
-AUTH0_BASE_URL=http://localhost:3000   # ← muda em produção
+AUTH0_BASE_URL=http://localhost:3001   # ← muda em produção
 AUTH0_AUDIENCE=https://api.dadg.com.br
 
 # Backend API URL — OBRIGATÓRIO
-BACKEND_URL=http://localhost:3001
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
+BACKEND_URL=http://localhost:3000
 
 # Google Calendar
 GOOGLE_API_KEY=...
@@ -101,8 +100,9 @@ O middleware em `proxy.ts` intercepta essas rotas e delega ao `auth0.middleware(
 1. Server Component busca eventos do mês: `GET {BACKEND_URL}/api/v1/events/openForRegistration/AAAA-MM`
 2. Se usuário logado: busca inscrições: `GET {BACKEND_URL}/api/v1/events/user/{userId}` (com Bearer Token)
 3. Renderiza `EventCard` para cada evento
-4. Usuário clica "Inscrever-se": `EventCard` faz `POST {NEXT_PUBLIC_BACKEND_URL}/api/v1/events/{id}/registration`
-5. Usuário clica "Cancelar": `EventCard` faz `DELETE .../registration`
+4. Usuário clica "Inscrever-se": `EventCard` chama o proxy local `POST /api/v1/events/{id}/registration`
+5. Usuário clica "Cancelar": `EventCard` chama `DELETE .../registration`
+6. O proxy server-side obtém o access token da sessão e encaminha a operação ao backend
 
 ### Proxy do Perfil
 
@@ -150,10 +150,10 @@ proxy.ts                      # Middleware global: Auth0 + Rate Limit
 → Esperado! O usuário precisa estar logado via Auth0.
 
 ### Erro 502 no perfil após login
-→ Backend não está rodando. Verifique se `http://localhost:3001` responde.
+→ Backend não está rodando. Verifique se `http://localhost:3000` responde.
 
 ### Login retorna 500
-→ Verifique `AUTH0_BASE_URL=http://localhost:3000` no `.env.local`.
+→ Verifique `AUTH0_BASE_URL=http://localhost:3001` no `.env.local`.
 
 ---
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Award, Users, Calendar, ArrowRight, Shield, Activity, HeartHandshake, Building2, BookOpen, MessageCircle, HelpCircle, Mail, MapPin, Instagram, ChevronDown } from 'lucide-react';
+import { Shield, Activity, HeartHandshake, Building2, BookOpen, MessageCircle, HelpCircle, Mail, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ImpactStats from './components/ImpactStats';
 import WaveDivider from './components/WaveDivider';

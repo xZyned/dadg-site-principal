@@ -43,7 +43,7 @@ async function proxyRequest(req: NextRequest, params: { slug: string[] }) {
     try {
       const body = await req.text();
       if (body) options.body = body;
-    } catch (e) {
+    } catch {
       // Body vazio
     }
   }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Award, Users, Calendar, Home, UserCircle2, BookOpen } from "lucide-react";
+import { Award, Calendar, Home, UserCircle2, BookOpen } from "lucide-react";
 
 const navItems = [
   {

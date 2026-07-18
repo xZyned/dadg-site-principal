@@ -14,7 +14,6 @@ import {
   Loader2,
   ExternalLink,
   LogOut,
-  Camera,
   BookOpen,
   QrCode,
   MapPin,
@@ -386,7 +385,6 @@ function EventHistoryCard({ event, detailed = false, onCancelSuccess }: { event:
           {showQr && (
             <div className="mt-3 flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-900 border border-slate-700">
               <p className="text-xs text-slate-400 text-center">Apresente este código na entrada do evento</p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={qrImageUrl}
                 alt="QR Code do Ingresso"

@@ -48,7 +48,7 @@ export default function AdminBlogDashboard() {
       } else {
         alert(data.error || "Erro ao excluir artigo.");
       }
-    } catch (err) {
+    } catch {
       alert("Erro de conexão ao tentar excluir.");
     }
   };

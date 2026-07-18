@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowLeft, Save, FileText, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Save, Image as ImageIcon } from "lucide-react";
 import "react-quill/dist/quill.snow.css";
 
 // React Quill precisa ser importado dinamicamente para não quebrar o SSR do Next.js
@@ -33,12 +33,7 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
     if (!isNewPost) {
       const fetchPost = async () => {
         try {
-          // Buscamos via proxy da API pública primeiro
-          const res = await fetch(`/api/v1/blog/proxy/posts`);
-          const data = await res.json();
-          // Aqui a rota pública não retorna draft, mas como somos admin, devíamos usar uma rota específica ou pegar pelo ID
-          // No backend já existe a GET /api/v1/blog/posts/[slug] e no admin eu poderia criar a GET /api/v1/blog/admin/posts/[id]
-          // Como não criei o GET por ID no admin, vamos apenas buscar a lista completa (admin) e pegar este
+          // A listagem administrativa inclui rascunhos e permite localizar o post pelo ID.
           const adminRes = await fetch(`/api/v1/blog/proxy/admin/posts`);
           const adminData = await adminRes.json();
           
@@ -59,7 +54,7 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
               setError("Post não encontrado");
             }
           }
-        } catch (err: any) {
+        } catch {
           setError("Erro ao carregar os dados do post.");
         } finally {
           setIsFetching(false);
@@ -123,7 +118,7 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
       } else {
         setError(data.error || "Erro ao salvar post.");
       }
-    } catch (err) {
+    } catch {
       setError("Erro de conexão ao salvar post.");
     } finally {
       setIsLoading(false);
@@ -166,6 +161,11 @@ export default function BlogEditorPage({ params }: { params: { id: string } }) {
             </h1>
           </div>
         </div>
+        {error && (
+          <p className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+            {error}
+          </p>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="glass-panel-strong p-6 md:p-8 rounded-3xl border border-white/60 dark:border-slate-800 shadow-sm space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
