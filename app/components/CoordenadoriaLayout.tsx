@@ -112,7 +112,7 @@ export function CoordenadoriaLayout({
                 src={logoSrc} 
                 alt={`Logo ${acronym}`} 
                 fill
-                className="object-cover p-1" 
+                className="object-cover" 
               />
             </div>
           </div>

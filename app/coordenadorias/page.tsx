@@ -114,7 +114,7 @@ export default function CoordenadoriasPage() {
                     {/* Inner White Circle */}
                     <div className="absolute inset-1 bg-white dark:bg-slate-900 rounded-full z-10" />
                     {/* Logo Image */}
-                    <div className="relative z-20 w-full h-full p-[2px] rounded-full overflow-hidden">
+                    <div className="relative z-20 w-full h-full rounded-full overflow-hidden">
                       {coord.icon}
                     </div>
                   </div>

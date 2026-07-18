@@ -1,60 +1,37 @@
-'use client';
+import Link from "next/link";
+import ScheduleClient from "@/app/components/ScheduleClient";
+import { PageHero } from "@/app/components/site-sections";
 
-import React, { useEffect } from 'react';
-import { Poppins } from 'next/font/google';
-import ScheduleClient from '../components/ScheduleClient';
-import './style.css';
-
-const stylePoppins = Poppins({
-  subsets: ['latin', 'latin-ext'],
-  weight: [
-    '100',
-    '200',
-    '300',
-    '400',
-    '500',
-    '600',
-    '700',
-    '800',
-    '900'
-  ],
-  style: ['normal', 'italic']
-});
-
-export default function AgendaPage() {
-  useEffect(() => {
-    // Criar partículas
-    const particlesContainer = document.querySelector('.particles');
-    if (particlesContainer) {
-      for (let i = 0; i < 50; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = `${Math.random() * 100}%`;
-        particle.style.top = `${Math.random() * 100}%`;
-        particle.style.animationDelay = `${Math.random() * 8}s`;
-        particlesContainer.appendChild(particle);
-      }
-    }
-  }, []);
-
+export default function EventosPage() {
   return (
-    <div className="events-container" style={stylePoppins.style}>
-      <div className="particles"></div>
-      
-      <div className="events-content">
-        <div className="events-header">
-          <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-bold mb-4 tracking-wide">
-            CALENDÁRIO DE EVENTOS
-          </h1>
-          <p className="events-subtitle">
-            Acompanhe todos os eventos e atividades da Imepac
-          </p>
-        </div>
+    <div className="space-y-12 pb-8 sm:space-y-16">
+      <PageHero
+        eyebrow="Eventos e agenda"
+        title="Calendário acadêmico"
+        description="Consulte a programação, navegue pelos meses e veja os detalhes de cada dia."
+        actions={
+          <Link
+            href="#calendario"
+            className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-900)]"
+          >
+            Ir para o calendário
+          </Link>
+        }
+        aside={
+          <div className="glass-panel-strong surface-outline relative overflow-hidden rounded-[28px] border border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(243,247,252,0.94)_100%)] px-5 py-5 shadow-[0_24px_64px_rgba(4,26,49,0.14)] dark:border-white/12 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.92)_0%,rgba(2,6,23,0.86)_100%)]">
+            <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(9,66,125,0.35)] to-transparent" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(79,143,214,0.14),transparent_42%)]" />
+            <div className="relative">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Agenda</p>
+              <p className="mt-3 text-lg font-semibold text-slate-950 dark:text-white">Consulta mensal e detalhe diário.</p>
+            </div>
+          </div>
+        }
+      />
 
-        <div className="calendar-container">
-          <ScheduleClient />
-        </div>
-      </div>
+      <section id="calendario" className="page-shell">
+        <ScheduleClient />
+      </section>
     </div>
   );
 }

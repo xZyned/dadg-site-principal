@@ -80,10 +80,10 @@ function SearchInterface({ isDark }: { isDark: boolean }) {
   return (
     <div className="w-full flex flex-col items-center max-w-3xl mx-auto">
       {/* Barra de Pesquisa */}
-      <div className="relative w-full group mb-10">
-        <div className={`absolute -inset-1 bg-gradient-to-r ${isDark ? 'from-blue-500 to-blue-300' : 'from-blue-400 to-blue-600'} rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-500`}></div>
-        <div className={`relative flex items-center backdrop-blur-xl border rounded-2xl p-2 shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-colors duration-500 ${isDark ? 'bg-[#00152b]/90 border-white/20' : 'bg-white/90 border-blue-200/50'}`}>
-          <div className={`pl-4 pr-2 transition-colors duration-500 ${isDark ? 'text-blue-300/70' : 'text-blue-500/70'}`}>
+      <div className="relative w-full max-w-md mx-auto group mb-10">
+        <div className={`absolute -inset-1 bg-gradient-to-r ${isDark ? 'from-blue-500 to-blue-300' : 'from-blue-400 to-blue-600'} rounded-full blur opacity-25 group-hover:opacity-40 transition duration-500`}></div>
+        <div className={`relative w-full backdrop-blur-xl border rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-colors duration-500 ${isDark ? 'bg-[#00152b]/90 border-white/20' : 'bg-white/90 border-blue-200/50'}`}>
+          <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-500 ${isDark ? 'text-blue-300/70' : 'text-blue-500/70'}`}>
             <Fingerprint className="w-6 h-6" />
           </div>
           <input
@@ -93,15 +93,14 @@ function SearchInterface({ isDark }: { isDark: boolean }) {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSearch();
             }}
-            className={`flex-1 bg-transparent border-none text-lg sm:text-xl focus:outline-none focus:ring-0 py-4 px-2 transition-colors duration-500 ${isDark ? 'text-white placeholder-blue-200/40' : 'text-slate-900 placeholder-slate-400'}`}
+            className={`w-full bg-transparent border-none rounded-full text-lg focus:outline-none focus:ring-0 py-4 pl-12 pr-16 transition-colors duration-500 ${isDark ? 'text-white placeholder-blue-200/40' : 'text-slate-900 placeholder-slate-400'}`}
             placeholder="Digite o Nome, CPF ou Código..."
           />
           <button
             onClick={handleSearch}
-            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 rounded-xl font-bold transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.4)] hover:shadow-[0_0_25px_rgba(59,130,246,0.6)]"
+            className={`absolute right-1 top-1 bottom-1 aspect-square flex items-center justify-center rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] ${isDark ? 'bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/30' : 'bg-[#002B5B] hover:bg-[#003B7B] text-white border border-[#002B5B]/30'}`}
           >
             <Search className="w-5 h-5" />
-            <span className="hidden sm:block">Buscar</span>
           </button>
         </div>
       </div>

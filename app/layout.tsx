@@ -1,8 +1,11 @@
+import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { UserProvider } from "@/lib/userProvider";
+import { auth0 } from "@/app/src/lib/auth0/Auth0Client";
 import "./globals.css";
+
 import MenuDrawer from "./components/MenuDrawer";
-import { auth0 } from "@/app/src/lib/auth0/Auth0Client"
 import Preloader from "@/components/Preloader";
 import { Inter, Playfair_Display } from "next/font/google";
 import CustomCursor from "./components/CustomCursor";
@@ -71,12 +74,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth0.getSession()
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const cookieStore = await cookies();
+  const session = await auth0.getSession();
+  // Default to light mode on first visit
+  const theme = cookieStore.get("dadg-theme")?.value === "dark" ? "dark" : "light";
+
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html 
+      lang="pt-BR" 
+      className={theme === "dark" ? "dark" : undefined}
+      style={{ colorScheme: theme }}
+      suppressHydrationWarning
+    >
       <body className={`${inter.variable} ${playfair.variable} font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
           <CustomCursor />
           <Preloader />
           {/* Componente Client que contém a interatividade */}
