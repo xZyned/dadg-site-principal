@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 interface BackendEvent {
   _id: string;

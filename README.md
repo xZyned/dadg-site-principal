@@ -12,13 +12,13 @@
 npm install
 
 # 2. Configure o .env.local (copie o template abaixo)
-# 3. Inicie o BACKEND primeiro (porta 3000)
+# 3. Inicie o BACKEND primeiro (porta 3001)
 # 4. Inicie o frontend
 npm run dev
-# → http://localhost:3001
+# → http://localhost:3000
 ```
 
-> ⚠️ **O backend `dadg-certificates` deve estar rodando em `http://localhost:3000` antes do frontend.**
+> ⚠️ **O backend `dadg-certificates` deve estar rodando em `http://localhost:3001` antes do frontend.**
 
 ---
 
@@ -28,9 +28,9 @@ Este é o **frontend** — não acessa o banco de dados diretamente.
 Todas as operações de eventos, inscrições e perfil são delegadas ao **backend** via HTTP.
 
 ```
-Frontend (porta 3001)
+Frontend (porta 3000)
     ↓ HTTP fetch com Bearer Token
-Backend dadg-certificates (porta 3000)
+Backend dadg-certificates (porta 3001)
     ↓ Mongoose
 MongoDB Atlas
 ```
@@ -43,11 +43,11 @@ AUTH0_DOMAIN=dev-qd3gyqp1h6nacnx8.us.auth0.com
 AUTH0_CLIENT_ID=vDinq9GGzcTShCYjKg8DG88YQvGvxg0y
 AUTH0_CLIENT_SECRET=<secret>
 AUTH0_SECRET=<random>
-AUTH0_BASE_URL=http://localhost:3001   # ← muda em produção
+AUTH0_BASE_URL=http://localhost:3000   # ← muda em produção
 AUTH0_AUDIENCE=https://api.dadg.com.br
 
 # Backend API URL — OBRIGATÓRIO
-BACKEND_URL=http://localhost:3000
+BACKEND_URL=http://localhost:3001
 
 # Google Calendar
 GOOGLE_API_KEY=...
@@ -150,10 +150,10 @@ proxy.ts                      # Middleware global: Auth0 + Rate Limit
 → Esperado! O usuário precisa estar logado via Auth0.
 
 ### Erro 502 no perfil após login
-→ Backend não está rodando. Verifique se `http://localhost:3000` responde.
+→ Backend não está rodando. Verifique se `http://localhost:3001` responde.
 
 ### Login retorna 500
-→ Verifique `AUTH0_BASE_URL=http://localhost:3001` no `.env.local`.
+→ Verifique `AUTH0_BASE_URL=http://localhost:3000` no `.env.local`.
 
 ---
 

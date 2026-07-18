@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/app/src/lib/auth0/Auth0Client";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 export const dynamic = "force-dynamic";
 

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 export default async function BlogPage() {
   let posts: BlogPostData[] = [];

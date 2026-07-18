@@ -11,7 +11,7 @@ import Footer from "./components/Footer";
 import UpcomingSchedulePopup from "./components/UpcomingSchedulePopup";
 import Preloader from "@/components/Preloader";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 import { Inter, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "./components/ThemeProvider";
 

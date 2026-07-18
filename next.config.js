@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
 
 const nextConfig = {
     async rewrites() {
