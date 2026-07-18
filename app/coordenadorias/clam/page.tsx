@@ -1,116 +1,84 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { CoordenadoriaLayout, ContentSection } from "../../components/CoordenadoriaLayout";
-import { IAcademicLeague } from "@/app/lib/models/AcademicLeagues";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import CoordinatorTemplate from "@/app/components/coordinator-template";
+import { SectionHeading } from "@/app/components/site-sections";
+import { coordinatorProfiles } from "@/app/lib/site-content";
+import GetAllNamesAndAcronym from "@/app/lib/models/src/AcademicLeagues/GetAllNamesAndAcronym";
 
-export default function CLAMPage() {
-  const [activeSection, setActiveSection] = useState<"basic" | "clinic" | null>(null);
-  const [data, setData] = useState<Pick<IAcademicLeague, "_id" | "name" | "acronym" | "type">[]>([]);
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/get/getAllNamesAndAcronym");
-        if (!res.ok) throw new Error("Network response was not ok");
-        const json = await res.json();
-        setData(json.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchData();
-  }, []);
+const leagueGroups = [
+  {
+    key: "basic",
+    title: "Ciclo básico",
+    description: "Ligas com foco nas bases da formação médica e na consolidação dos primeiros ciclos.",
+  },
+  {
+    key: "clinic",
+    title: "Ciclo clínico",
+    description: "Ligas voltadas para prática, aprofundamento e experiências ligadas ao cuidado clínico.",
+  },
+] as const;
 
-  const toggleSection = (section: "basic" | "clinic") => {
-    setActiveSection(activeSection === section ? null : section);
-  };
+export default async function CLAMPage() {
+  const leagues = await GetAllNamesAndAcronym();
 
   return (
-    <CoordenadoriaLayout
-      acronym="CLAM"
-      title="Coordenadoria de Ligas Acadêmicas de Medicina"
-      description="A CLAM é o órgão responsável por coordenar e integrar todas as ligas acadêmicas da Imepac, fomentando o desenvolvimento científico."
-      logoSrc="/coordinators/CLAM_logo.png"
-      themeColor="red"
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <ContentSection title="Quem Somos">
-          <p>
-            A CLAM atua como o pilar central na coordenação e integração de todas as Ligas Acadêmicas de Medicina.
-            Nós conectamos os alunos aos mais variados projetos extracurriculares.
-          </p>
-        </ContentSection>
+    <CoordinatorTemplate profile={coordinatorProfiles.clam}>
+      <section className="page-shell space-y-8">
+        <SectionHeading
+          eyebrow="Ligas"
+          title="Explore as ligas acadêmicas"
+          description="Abra cada grupo para navegar pelas ligas vinculadas à CLAM e seguir para a página detalhada de cada uma."
+        />
 
-        <ContentSection title="Nossos Objetivos">
-          <p>
-            Promover a integração entre as ligas acadêmicas, fomentar o desenvolvimento acadêmico e científico, e contribuir 
-            para a formação médica de excelência através da pesquisa e extensão.
-          </p>
-        </ContentSection>
-      </div>
+        <div className="grid gap-5 xl:grid-cols-2">
+          {leagueGroups.map((group) => {
+            const items = leagues.filter((league) => league.type === group.key);
 
-      <ContentSection title="Ligas Acadêmicas">
-        <div className="space-y-6 mt-4">
-          {/* Ciclo Básico */}
-          <div className="rounded-2xl border transition-colors duration-300 overflow-hidden bg-white/50 dark:bg-white/5 border-red-100 dark:border-white/10">
-            <button 
-              onClick={() => toggleSection("basic")}
-              className="w-full flex items-center justify-between p-6 font-semibold text-xl transition-colors hover:bg-red-50/50 dark:hover:bg-white/5"
-            >
-              Ciclo Básico
-              {activeSection === "basic" ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
-            </button>
-            
-            {activeSection === "basic" && (
-              <div className="p-6 pt-0 border-t border-red-50 dark:border-white/10">
-                <ul className="space-y-3 mt-4">
-                  {data.filter((league) => league.type === "basic").map((league, index) => (
-                    <li key={index}>
-                      <Link href={`/coordenadorias/clam/liga/${league._id}`} className="block p-4 rounded-xl border transition-all shadow-sm bg-white dark:bg-transparent border-red-50 dark:border-white/5 hover:border-red-200 dark:hover:border-white/20 dark:hover:bg-white/5">
-                        {league.name} <span className="font-bold">({league.acronym})</span>
-                      </Link>
-                    </li>
-                  ))}
-                  {data.filter((league) => league.type === "basic").length === 0 && (
-                    <p className="text-sm opacity-60">Nenhuma liga encontrada.</p>
+            return (
+              <details
+                key={group.key}
+                className="glass-panel surface-outline overflow-hidden rounded-[28px] border border-white/70 p-5"
+                open
+              >
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-4 rounded-[22px] bg-white/70 px-4 py-4 text-left [&::-webkit-details-marker]:hidden dark:bg-slate-900/56">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 dark:text-slate-400">
+                      {items.length} liga{items.length === 1 ? "" : "s"}
+                    </p>
+                    <h3 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">{group.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">{group.description}</p>
+                  </div>
+                  <ChevronDown className="mt-1 h-5 w-5 flex-none text-slate-500 dark:text-slate-400" />
+                </summary>
+
+                <div className="mt-4 space-y-3">
+                  {items.length === 0 ? (
+                    <p className="rounded-[22px] border border-dashed border-[rgba(9,66,125,0.18)] bg-white/72 px-4 py-5 text-sm font-medium text-slate-500 dark:bg-slate-900/68 dark:text-slate-400">
+                      Nenhuma liga cadastrada neste grupo no momento.
+                    </p>
+                  ) : (
+                    <ul className="space-y-3">
+                      {items.map((league) => (
+                        <li key={String(league._id)}>
+                          <Link
+                            href={`/coordenadorias/clam/liga/${String(league._id)}`}
+                            className="block rounded-[22px] border border-white/70 bg-white/80 px-4 py-4 text-sm font-medium text-slate-700 transition-transform duration-300 hover:-translate-y-0.5 hover:text-slate-950 dark:border-white/10 dark:bg-slate-900/72 dark:text-slate-200 dark:hover:text-white"
+                          >
+                            <span className="font-semibold">{league.name}</span>
+                            <span className="ml-2 text-slate-500 dark:text-slate-400">({league.acronym})</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
                   )}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {/* Ciclo Clínico */}
-          <div className="rounded-2xl border transition-colors duration-300 overflow-hidden bg-white/50 dark:bg-white/5 border-red-100 dark:border-white/10">
-            <button 
-              onClick={() => toggleSection("clinic")}
-              className="w-full flex items-center justify-between p-6 font-semibold text-xl transition-colors hover:bg-red-50/50 dark:hover:bg-white/5"
-            >
-              Ciclo Clínico
-              {activeSection === "clinic" ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
-            </button>
-            
-            {activeSection === "clinic" && (
-              <div className="p-6 pt-0 border-t border-red-50 dark:border-white/10">
-                <ul className="space-y-3 mt-4">
-                  {data.filter((league) => league.type === "clinic").map((league, index) => (
-                    <li key={index}>
-                      <Link href={`/coordenadorias/clam/liga/${league._id}`} className="block p-4 rounded-xl border transition-all shadow-sm bg-white dark:bg-transparent border-red-50 dark:border-white/5 hover:border-red-200 dark:hover:border-white/20 dark:hover:bg-white/5">
-                        {league.name} <span className="font-bold">({league.acronym})</span>
-                      </Link>
-                    </li>
-                  ))}
-                  {data.filter((league) => league.type === "clinic").length === 0 && (
-                    <p className="text-sm opacity-60">Nenhuma liga encontrada.</p>
-                  )}
-                </ul>
-              </div>
-            )}
-          </div>
+                </div>
+              </details>
+            );
+          })}
         </div>
-      </ContentSection>
-    </CoordenadoriaLayout>
+      </section>
+    </CoordinatorTemplate>
   );
 }

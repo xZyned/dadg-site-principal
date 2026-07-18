@@ -2,28 +2,43 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Award, Users, Calendar } from "lucide-react";
+import { Award, Users, Calendar, Home, UserCircle2, BookOpen } from "lucide-react";
 
 const navItems = [
   {
-    href: "/certificados",
-    label: "Certificados",
-    icon: Award,
-  },
-  {
-    href: "/coordenadorias",
-    label: "Coordenadorias",
-    icon: Users,
+    href: "/",
+    label: "Início",
+    icon: Home,
   },
   {
     href: "/eventos",
     label: "Eventos",
     icon: Calendar,
   },
+  {
+    href: "/certificados",
+    label: "Certificados",
+    icon: Award,
+  },
+  {
+    href: "/blog",
+    label: "Blog",
+    icon: BookOpen,
+  },
+  {
+    href: "/perfil",
+    label: "Perfil",
+    icon: UserCircle2,
+  },
 ];
 
-export default function MobileBottomNav() {
+export default function MobileBottomNav({ blogEnabled = true }: { blogEnabled?: boolean }) {
   const pathname = usePathname();
+
+  const visibleNavItems = navItems.filter(item => {
+    if (item.href === "/blog" && !blogEnabled) return false;
+    return true;
+  });
 
   return (
     <nav
@@ -32,7 +47,7 @@ export default function MobileBottomNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <ul className="flex items-stretch justify-around">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {visibleNavItems.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
             <li key={href} className="flex-1">

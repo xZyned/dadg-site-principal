@@ -6,10 +6,14 @@ import { auth0 } from "@/app/src/lib/auth0/Auth0Client";
 import "./globals.css";
 
 import MenuDrawer from "./components/MenuDrawer";
+import MobileBottomNav from "./components/MobileBottomNav";
+import Footer from "./components/Footer";
+import UpcomingSchedulePopup from "./components/UpcomingSchedulePopup";
 import Preloader from "@/components/Preloader";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
 import { Inter, Playfair_Display } from "next/font/google";
 import CustomCursor from "./components/CustomCursor";
-import MobileBottomNav from "./components/MobileBottomNav";
 import { ThemeProvider } from "./components/ThemeProvider";
 
 const inter = Inter({
@@ -80,6 +84,19 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   // Default to light mode on first visit
   const theme = cookieStore.get("dadg-theme")?.value === "dark" ? "dark" : "light";
 
+  let blogEnabled = true;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/settings`, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (typeof data.blogEnabled === "boolean") {
+        blogEnabled = data.blogEnabled;
+      }
+    }
+  } catch (error) {
+    console.error("[RootLayout] Erro ao buscar configurações:", error);
+  }
+
   return (
     <html 
       lang="pt-BR" 
@@ -91,15 +108,18 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
           <CustomCursor />
           <Preloader />
-          {/* Componente Client que contém a interatividade */}
-          <MenuDrawer />
-          {/* Bottom nav mobile */}
-          <MobileBottomNav />
-          <div className="main-content pb-16 md:pb-0">
-            <UserProvider tokenVar={session?.tokenSet.idToken || undefined}>
-              {children}
-            </UserProvider>
-          </div>
+          <UpcomingSchedulePopup />
+          <UserProvider tokenVar={session?.tokenSet.accessToken || undefined}>
+            <MenuDrawer blogEnabled={blogEnabled} />
+            <MobileBottomNav blogEnabled={blogEnabled} />
+            <div className="main-content pb-16 md:pb-0 flex flex-col min-h-screen">
+              <div className="flex-grow">
+                {children}
+              </div>
+              <Footer />
+            </div>
+          </UserProvider>
+          
           <script dangerouslySetInnerHTML={{
             __html: `
               document.addEventListener('contextmenu', event => event.preventDefault());

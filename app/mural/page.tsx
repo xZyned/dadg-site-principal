@@ -13,7 +13,7 @@ export default async function MuralPage() {
   const murais = response.items;
 
   return (
-    <div className="space-y-12 pb-8 sm:space-y-14">
+    <div className="space-y-12 pt-28 pb-8 sm:space-y-14">
       <PageHero
         eyebrow="Mural"
         title="Avisos e comunicados"
