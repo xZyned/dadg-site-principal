@@ -13,7 +13,6 @@ import Preloader from "@/components/Preloader";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
 import { Inter, Playfair_Display } from "next/font/google";
-import CustomCursor from "./components/CustomCursor";
 import { ThemeProvider } from "./components/ThemeProvider";
 
 const inter = Inter({
@@ -106,7 +105,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     >
       <body className={`${inter.variable} ${playfair.variable} font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
-          <CustomCursor />
           <Preloader />
           <UpcomingSchedulePopup />
           <UserProvider tokenVar={session?.tokenSet.accessToken || undefined}>
