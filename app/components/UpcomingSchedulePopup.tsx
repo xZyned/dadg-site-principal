@@ -29,10 +29,12 @@ function getEventDate(dateTime?: string, date?: string): Date | null {
 
 export default function UpcomingSchedulePopup() {
   const [dismissed, setDismissed] = useState(false);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
 
   const range = useMemo(() => {
     const now = new Date();
@@ -73,7 +75,7 @@ export default function UpcomingSchedulePopup() {
   }, []);
 
   useEffect(() => {
-    if (dismissed) return;
+    if (dismissed || !expanded || hasLoaded) return;
 
     const fetchUpcoming = async () => {
       setLoading(true);
@@ -87,15 +89,18 @@ export default function UpcomingSchedulePopup() {
 
         const data = await res.json();
         setEvents((data.items || []) as CalendarEvent[]);
+        setUnavailable(data.unavailable === true);
       } catch {
         setEvents([]);
+        setUnavailable(true);
       } finally {
         setLoading(false);
+        setHasLoaded(true);
       }
     };
 
     fetchUpcoming();
-  }, [dismissed, range.end, range.start]);
+  }, [dismissed, expanded, hasLoaded, range.end, range.start]);
 
   const items = useMemo(() => {
     return events
@@ -174,6 +179,10 @@ export default function UpcomingSchedulePopup() {
           {loading ? (
             <div className="rounded-[20px] border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
               Carregando eventos...
+            </div>
+          ) : unavailable ? (
+            <div className="rounded-[20px] border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+              Programação indisponível no momento.
             </div>
           ) : items.length === 0 ? (
             <div className="rounded-[20px] border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm font-medium text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">

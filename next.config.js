@@ -1,15 +1,19 @@
 /** @type {import('next').NextConfig} */
-const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-
 const nextConfig = {
-    async rewrites() {
-        return [
-            {
-                source: '/api/v1/:path*',
-                destination: `${backendUrl}/api/v1/:path*`
-            }
-        ];
-    }
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "s.gravatar.com",
+        pathname: "/avatar/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.auth0.com",
+        pathname: "/avatars/**",
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig;

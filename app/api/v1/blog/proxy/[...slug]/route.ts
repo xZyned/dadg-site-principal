@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/app/src/lib/auth0/Auth0Client";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+import {
+  applyBackendAuthentication,
+  BACKEND_URL,
+  backendErrorStatus,
+  fetchBackend,
+} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
@@ -23,13 +27,7 @@ async function proxyRequest(req: NextRequest, params: { slug: string[] }) {
   // Se houver sessão (usuário logado), envia a autenticação
   const session = await auth0.getSession();
   if (session?.user) {
-    if (session.user.email) {
-      headers.set("X-User-Email", session.user.email);
-    }
-    const token = session.tokenSet?.accessToken;
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
-    }
+    applyBackendAuthentication(headers, req, session);
   }
 
   const options: RequestInit = {
@@ -49,7 +47,7 @@ async function proxyRequest(req: NextRequest, params: { slug: string[] }) {
   }
 
   try {
-    const backendRes = await fetch(targetUrl.toString(), options);
+    const backendRes = await fetchBackend(`${targetUrl.pathname}${targetUrl.search}`, options);
     
     // Ler o body em texto primeiro
     const responseText = await backendRes.text();
@@ -63,7 +61,11 @@ async function proxyRequest(req: NextRequest, params: { slug: string[] }) {
     return NextResponse.json(responseData, { status: backendRes.status });
   } catch (err) {
     console.error(`[Proxy Blog /api/v1/blog/proxy/${path}] Erro:`, err);
-    return NextResponse.json({ error: "Erro ao conectar ao backend" }, { status: 502 });
+    const status = backendErrorStatus(err);
+    return NextResponse.json(
+      { error: status === 504 ? "Tempo limite do backend excedido" : "Erro ao conectar ao backend" },
+      { status },
+    );
   }
 }
 

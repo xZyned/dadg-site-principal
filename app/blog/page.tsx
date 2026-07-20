@@ -1,31 +1,22 @@
 import { PageHero } from "@/app/components/site-sections";
 import BlogCard, { BlogPostData } from "@/app/components/BlogCard";
 import { notFound } from "next/navigation";
+import { fetchBackend, readBackendJson } from "@/lib/backend";
+import { getSiteSettings } from "@/lib/siteSettings";
 
 export const dynamic = "force-dynamic";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 export default async function BlogPage() {
   let posts: BlogPostData[] = [];
 
-  try {
-    const settingsRes = await fetch(`${BACKEND_URL}/api/v1/settings`, { cache: "no-store" });
-    if (settingsRes.ok) {
-      const settings = await settingsRes.json();
-      if (settings.blogEnabled === false) {
-        notFound();
-      }
-    }
-  } catch (err) {
-    console.error("[BlogPage] Erro ao buscar configurações:", err);
-  }
+  const { blogEnabled } = await getSiteSettings();
+  if (!blogEnabled) notFound();
 
   try {
-    const res = await fetch(`${BACKEND_URL}/api/v1/blog/posts`, { cache: "no-store" });
+    const res = await fetchBackend("/api/v1/blog/posts", { cache: "no-store" });
     if (res.ok) {
-      const data = await res.json();
-      posts = data.data || [];
+      const data = await readBackendJson(res);
+      posts = Array.isArray(data.data) ? data.data as BlogPostData[] : [];
     }
   } catch (err) {
     console.error("[BlogPage] Erro ao buscar posts:", err);

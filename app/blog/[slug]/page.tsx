@@ -4,20 +4,24 @@ import Link from "next/link";
 import { ArrowLeft, CalendarDays, User } from "lucide-react";
 import BlogCommentSection from "@/app/components/BlogCommentSection";
 import { auth0 } from "@/app/src/lib/auth0/Auth0Client";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+import { fetchBackend, readBackendJson } from "@/lib/backend";
+import type { BlogPostData } from "@/app/components/BlogCard";
 
 export const dynamic = "force-dynamic";
+
+interface BlogPostDetails extends BlogPostData {
+  content: string;
+}
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  let post = null;
+  let post: BlogPostDetails | null = null;
   try {
-    const res = await fetch(`${BACKEND_URL}/api/v1/blog/posts/${slug}`, { cache: "no-store" });
+    const res = await fetchBackend(`/api/v1/blog/posts/${encodeURIComponent(slug)}`, { cache: "no-store" });
     if (res.ok) {
-      const data = await res.json();
-      post = data.data;
+      const data = await readBackendJson(res);
+      post = data.data && typeof data.data === "object" ? data.data as BlogPostDetails : null;
     }
   } catch (err) {
     console.error("[BlogPostPage] Erro ao buscar post:", err);

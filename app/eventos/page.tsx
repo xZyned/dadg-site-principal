@@ -3,11 +3,9 @@ import ScheduleClient from "@/app/components/ScheduleClient";
 import { PageHero } from "@/app/components/site-sections";
 import EventCard from "@/app/components/EventCard";
 import { auth0 } from "@/app/src/lib/auth0/Auth0Client";
-import { cookies } from "next/headers";
+import { fetchBackend, readBackendJson } from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
 
 interface BackendEvent {
   _id: string;
@@ -35,13 +33,13 @@ export default async function EventosPage() {
 
   // 1. Buscar eventos abertos do mês no backend
   try {
-    const eventsRes = await fetch(
-      `${BACKEND_URL}/api/v1/events/openForRegistration/${yearMonth}`,
+    const eventsRes = await fetchBackend(
+      `/api/v1/events/openForRegistration/${yearMonth}`,
       { cache: "no-store" }
     );
     if (eventsRes.ok) {
-      const eventsData = await eventsRes.json();
-      events = eventsData.data || [];
+      const eventsData = await readBackendJson(eventsRes);
+      events = Array.isArray(eventsData.data) ? eventsData.data as BackendEvent[] : [];
     }
   } catch (err) {
     console.error("[EventosPage] Erro ao buscar eventos do backend:", err);
@@ -54,16 +52,18 @@ export default async function EventosPage() {
       const ownerId = session.user.sub.includes("|")
         ? session.user.sub.split("|")[1]
         : session.user.sub;
-      const cookieStore = await cookies();
-      const cookieString = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
-
-      const subsRes = await fetch(
-        `${BACKEND_URL}/api/v1/events/user/${ownerId}`,
-        { headers: { Cookie: cookieString }, cache: "no-store" }
+      const subsRes = await fetchBackend(
+        `/api/v1/events/user/${encodeURIComponent(ownerId)}`,
+        {
+          headers: { Authorization: `Bearer ${session.tokenSet.accessToken}` },
+          cache: "no-store",
+        }
       );
       if (subsRes.ok) {
-        const subsData = await subsRes.json();
-        const subs: Array<{ eventId: { _id: string } | string }> = subsData.data || [];
+        const subsData = await readBackendJson(subsRes);
+        const subs = Array.isArray(subsData.data)
+          ? subsData.data as Array<{ eventId: { _id: string } | string }>
+          : [];
         subs.forEach((s) => {
           const id = typeof s.eventId === "object" ? s.eventId._id : s.eventId;
           userSubscribedEventIds.add(String(id));
