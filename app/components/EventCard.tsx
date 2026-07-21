@@ -32,17 +32,17 @@ interface EventCardProps {
     event: EventData;
     isSubscribed: boolean;
     isLoggedIn: boolean;
-    accessToken: string | null;
     /** E-mail já autenticado do Auth0 — pré-preenche o campo */
     userEmail?: string | null;
+    onSubscriptionChange?: () => void | Promise<void>;
 }
 
 export default function EventCard({
     event,
     isSubscribed: initialSubscribed,
     isLoggedIn,
-    accessToken,
     userEmail,
+    onSubscriptionChange,
 }: EventCardProps) {
     const router = useRouter();
     const [isSubscribed, setIsSubscribed] = useState(initialSubscribed);
@@ -69,7 +69,7 @@ export default function EventCard({
     };
 
     const handleEnrollClick = () => {
-        if (!isLoggedIn || !accessToken) {
+        if (!isLoggedIn) {
             window.location.href = "/api/auth/login?returnTo=/eventos";
             return;
         }
@@ -125,10 +125,7 @@ export default function EventCard({
 
             const res = await fetch(endpoint, {
                 method,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-                },
+                headers: { "Content-Type": "application/json" },
                 body: method === "POST" ? JSON.stringify({ ownerEmail, ownerCpf }) : undefined,
             });
             const data = await res.json();
@@ -136,6 +133,7 @@ export default function EventCard({
             if (res.ok) {
                 setIsSubscribed(!isSubscribed);
                 router.refresh();
+                await onSubscriptionChange?.();
             } else {
                 setErrorMsg(data.error || data.message || "Ocorreu um erro ao processar sua inscrição.");
             }

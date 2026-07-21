@@ -88,7 +88,6 @@ export default async function EventosPage() {
   }));
 
   const isLoggedIn = !!session?.user;
-  const userAccessToken = session?.tokenSet?.accessToken || null;
 
   return (
     <div className="space-y-12 pt-28 pb-8 sm:space-y-16">
@@ -135,7 +134,7 @@ export default async function EventosPage() {
                 event={event}
                 isSubscribed={userSubscribedEventIds.has(event._id)}
                 isLoggedIn={isLoggedIn}
-                accessToken={userAccessToken}
+                userEmail={typeof session?.user?.email === "string" ? session.user.email : null}
               />
             ))}
           </div>
