@@ -10,37 +10,43 @@ if (!RATE_LIMIT || isNaN(Number(RATE_LIMIT))) {
 }
 
 export async function proxy(req: NextRequest) {
-  const session = await auth0.getSession()
-  // Verificando o rate limit antes de qualquer outra coisa
-  // Algumas rotas não precisam de proteção, porque são nativas Nextjs e iriam falsear o rate limit.
-  const isStaticResource = /\/_next\/static|\/_next\/image|turbopack|favicon\.ico|\.(svg|png|jpg|jpeg|gif|webp|js|css|woff2?)$/i.test(req.nextUrl.pathname);
-  if (!isStaticResource) {
-    // DDoS protection para rotas sensíveis: Registration limite restrito a 3 requisições
-    const isRegistrationRoute = /^\/api\/v1\/events\/.*\/registration/i.test(req.nextUrl.pathname);
+  const pathname = req.nextUrl.pathname;
+  const isAuthRoute = pathname.startsWith("/auth/") || pathname.startsWith("/api/auth/");
+  const isApiMutation = pathname.startsWith("/api/") && !["GET", "HEAD", "OPTIONS"].includes(req.method);
+
+  if (isApiMutation && !isAuthRoute) {
+    const isRegistrationRoute = /^\/api\/v1\/events\/.*\/registration/i.test(pathname);
     const limitToApply = isRegistrationRoute ? 3 : Number(RATE_LIMIT);
-    
-    // Como optamos para um valor estático de rateLimit para todos, tenho que tirar alguns arquivos fundamentais da aplicação
-    // E isolar apenas a infraestrutura.
-    const { canAccess } = await rateLimit(req, limitToApply)
+    const { canAccess, unavailable } = await rateLimit(req, limitToApply)
+
+    if (unavailable && !canAccess) {
+      return NextResponse.json({ error: "Serviço de proteção temporariamente indisponível" }, { status: 503 });
+    }
     if (!canAccess) {
       return new Response("Too Many Requests", { status: 429 })
     }
   }
-  if (req.nextUrl.pathname.startsWith("/panel")) {
+
+  if (pathname.startsWith("/panel")) {
+    const session = await auth0.getSession()
     if (!session) {
-      return NextResponse.redirect(new URL(`/auth/login?returnTo=${encodeURIComponent(req.nextUrl.pathname)}`, req.url));
+      return NextResponse.redirect(new URL(`/auth/login?returnTo=${encodeURIComponent(pathname)}`, req.url));
     }
     return await auth0.middleware(req)
   }
+
   // Suporte ao fluxo de login/logout do Auth0 no frontend
-  if (req.nextUrl.pathname.startsWith("/auth/") || req.nextUrl.pathname.startsWith("/api/auth/")) {
+  if (isAuthRoute) {
     return await auth0.middleware(req)
   }
+
   return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    '/:path*',
+    '/panel/:path*',
+    '/auth/:path*',
+    '/api/:path*',
   ],
 }

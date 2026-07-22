@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0';
 import { CalendarDays, Loader2, LogIn, RefreshCw, UserRound } from 'lucide-react';
+import EventCard from '@/app/components/EventCard';
 
 type ProfileEvent = {
     participationId: string;
@@ -18,8 +19,12 @@ type AvailableEvent = {
     _id: string;
     eventName: string;
     eventDescription: string;
+    eventBenefits?: string;
+    eventType: string;
     registrationCount: number;
     maxParticipants: number;
+    isPaid: boolean;
+    price?: number;
     isOpen?: boolean;
     statusDetails?: {
         status: 'DRAFT' | 'PUBLISHED_OPEN' | 'PUBLISHED_CLOSED' | 'CERTIFICATE_ONLY';
@@ -82,17 +87,14 @@ export default function EventDashboard() {
         return isOpen && (!endDate || new Date(endDate).getTime() >= Date.now());
     };
 
-    const changeRegistration = async (event: AvailableEvent, method: 'POST' | 'DELETE') => {
-        setPendingEventId(event._id);
+    const cancelRegistration = async (eventId: string) => {
+        setPendingEventId(eventId);
         setError('');
 
         try {
-            const response = await fetch(`/api/v1/events/${event._id}/registration`, {
-                method,
+            const response = await fetch(`/api/v1/events/${eventId}/registration`, {
+                method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: method === 'POST'
-                    ? JSON.stringify({ ownerEmail: user?.email || '', ownerCpf: '' })
-                    : undefined,
             });
             const responseBody = await response.json();
             if (!response.ok) {
@@ -157,7 +159,7 @@ export default function EventDashboard() {
                                     <span className="text-xs text-slate-500">Inscrito em {new Date(participation.enrolledAt).toLocaleDateString('pt-BR')}</span>
                                     {participation.isOpen && (
                                         <button
-                                            onClick={() => void changeRegistration({ _id: participation.eventId, eventName: participation.eventName, eventDescription: participation.eventDescription || '', registrationCount: 0, maxParticipants: 0, isOpen: true }, 'DELETE')}
+                                            onClick={() => void cancelRegistration(participation.eventId)}
                                             disabled={pendingEventId === participation.eventId}
                                             className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 disabled:opacity-50 dark:border-red-900/50 dark:text-red-400"
                                         >
@@ -181,18 +183,17 @@ export default function EventDashboard() {
                             const subscribed = isParticipating(String(event._id));
                             const available = canRegister(event);
                             return (
-                                <article key={String(event._id)} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                                    <h3 className="font-semibold text-slate-900 dark:text-white">{event.eventName}</h3>
-                                    <p className="mt-2 line-clamp-3 text-sm text-slate-600 dark:text-slate-400">{event.eventDescription}</p>
-                                    <p className="mt-3 text-xs text-slate-500">{event.registrationCount} de {event.maxParticipants} vagas ocupadas</p>
-                                    <button
-                                        onClick={() => void changeRegistration(event, subscribed ? 'DELETE' : 'POST')}
-                                        disabled={pendingEventId === String(event._id) || (!available && !subscribed)}
-                                        className={`mt-4 w-full rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-50 ${subscribed ? 'border border-red-200 text-red-600 dark:border-red-900/50 dark:text-red-400' : 'bg-blue-600 text-white'}`}
-                                    >
-                                        {pendingEventId === String(event._id) ? 'Processando...' : subscribed ? 'Cancelar inscrição' : available ? 'Inscrever-se' : 'Inscrições encerradas'}
-                                    </button>
-                                </article>
+                                <EventCard
+                                    key={String(event._id)}
+                                    event={{
+                                        ...event,
+                                        isOpen: available,
+                                    }}
+                                    isSubscribed={subscribed}
+                                    isLoggedIn={true}
+                                    userEmail={typeof user.email === 'string' ? user.email : null}
+                                    onSubscriptionChange={loadDashboard}
+                                />
                             );
                         })}
                     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -54,6 +54,8 @@ interface ProfileData {
 }
 
 export default function PerfilPage() {
+  const loadStarted = useRef(false);
+  const bookmarksLoadStarted = useRef(false);
   const [data, setData] = useState<ProfileData | null>(null);
   const [savedArticles, setSavedArticles] = useState<BlogPostData[]>([]);
   const [activeTab, setActiveTab] = useState<"eventos" | "artigos">("eventos");
@@ -62,23 +64,23 @@ export default function PerfilPage() {
   const [blogEnabled, setBlogEnabled] = useState(true);
 
   useEffect(() => {
-    // Chamamos o endpoint do backend diretamente através do proxy configurado no next.config.js
-    // O Next.js envia o cookie de sessão Auth0 automaticamente!
+    if (loadStarted.current) return;
+    loadStarted.current = true;
+
+    // O Route Handler do frontend converte a sessão Auth0 em Bearer para o backend.
     Promise.all([
-      fetch("/api/perfil/proxy").then((res) => {
-        if (res.status === 401) throw new Error("not_authenticated");
-        if (!res.ok) throw new Error("error");
-        return res.json();
-      }),
-      fetch("/api/v1/blog/proxy/bookmarks").then((res) => {
-        if (!res.ok) return { data: [] };
-        return res.json();
+      fetch("/api/perfil/proxy").then(async (res) => {
+        const payload = await res.json().catch(() => ({ error: "Erro ao carregar perfil" }));
+        if (res.status === 401 && payload.code === "NOT_AUTHENTICATED") {
+          throw new Error("not_authenticated");
+        }
+        if (!res.ok) throw new Error(payload.error || "error");
+        return payload;
       }),
       fetch("/api/settings").then(res => res.ok ? res.json() : { blogEnabled: true })
     ])
-      .then(([profileJson, bookmarksJson, settingsJson]) => {
+      .then(([profileJson, settingsJson]) => {
         setData(profileJson);
-        setSavedArticles(bookmarksJson.data || []);
         if (settingsJson && typeof settingsJson.blogEnabled === "boolean") {
           setBlogEnabled(settingsJson.blogEnabled);
         }
@@ -92,6 +94,16 @@ export default function PerfilPage() {
       })
       .finally(() => setIsLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "artigos" || !blogEnabled || bookmarksLoadStarted.current) return;
+    bookmarksLoadStarted.current = true;
+
+    fetch("/api/v1/blog/proxy/bookmarks")
+      .then((res) => res.ok ? res.json() : { data: [] })
+      .then((bookmarksJson) => setSavedArticles(bookmarksJson.data || []))
+      .catch(() => setSavedArticles([]));
+  }, [activeTab, blogEnabled]);
 
   if (isLoading) {
     return (

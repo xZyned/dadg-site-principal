@@ -7,36 +7,56 @@
  * Este proxy pega o accessToken da sessão e repassa ao backend como Bearer.
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/app/src/lib/auth0/Auth0Client";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+import {
+  applyBackendAuthentication,
+  backendErrorStatus,
+  fetchBackend,
+  readBackendJson,
+} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await auth0.getSession();
   if (!session?.user || !session.tokenSet?.accessToken) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Não autenticado", code: "NOT_AUTHENTICATED" },
+      { status: 401 },
+    );
   }
 
   try {
-    const backendRes = await fetch(`${BACKEND_URL}/api/v1/user/profile`, {
-      headers: {
-        Authorization: `Bearer ${session.tokenSet.accessToken}`,
-        "Content-Type": "application/json",
-        "X-User-Email": session.user.email || ""
-      },
+    const headers = new Headers({ "Content-Type": "application/json" });
+    applyBackendAuthentication(headers, request, session);
+
+    const backendRes = await fetchBackend("/api/v1/user/profile", {
+      headers,
       cache: "no-store",
     });
 
-    const data = await backendRes.json();
+    const data = await readBackendJson(backendRes);
+    if (!backendRes.ok) {
+      return NextResponse.json(
+        {
+          error: data.error || data.message || "Erro retornado pelo backend",
+          code: [401, 403].includes(backendRes.status) ? "BACKEND_AUTH_REJECTED" : "BACKEND_ERROR",
+        },
+        { status: backendRes.status },
+      );
+    }
+
     return NextResponse.json({
       user: session.user,
-      events: data.data || []
-    }, { status: backendRes.status });
+      events: Array.isArray(data.data) ? data.data : [],
+    });
   } catch (err) {
     console.error("[Proxy /api/perfil/proxy] Erro:", err);
-    return NextResponse.json({ error: "Erro ao conectar ao backend" }, { status: 502 });
+    const status = backendErrorStatus(err);
+    return NextResponse.json(
+      { error: status === 504 ? "Tempo limite do backend excedido" : "Erro ao conectar ao backend" },
+      { status },
+    );
   }
 }

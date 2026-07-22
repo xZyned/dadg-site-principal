@@ -16,32 +16,42 @@ interface TrafficLog {
     createdAt: Date;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI
-const MONGODB_DB = process.env.MONGODB_DB
-if (!MONGODB_URI || MONGODB_URI === "") {
-    throw new Error("MONGODB_URI is not defined in environment variables");
-}
-if (!MONGODB_DB || MONGODB_DB === "") {
-    throw new Error("MONGODB_DB is not defined in environment variables");
-}
 // 1. Variável global para manter a conexão viva entre as invocações Serverless
 let cachedClient: MongoClient | null = null;
+let indexesReady = false;
 
 async function getMongoClient() {
     if (cachedClient) return cachedClient;
 
-    const client = new MongoClient(MONGODB_URI!);
+    const mongodbUri = process.env.MONGODB_URI;
+    if (!mongodbUri) {
+        throw new Error("MONGODB_URI is not defined in environment variables");
+    }
+
+    const client = new MongoClient(mongodbUri);
     await client.connect();
     cachedClient = client;
+
+    if (!indexesReady) {
+        await client.db("proxy").collection("rateLimit").createIndex(
+            { createdAt: 1 },
+            { expireAfterSeconds: 300, name: "rate_limit_ttl" },
+        );
+        indexesReady = true;
+    }
+
     return client;
 }
 
-export async function rateLimit(req: NextRequest, limit: number): Promise<{ canAccess: boolean; count?: number }> {
-    let ip = req.headers.get('x-forwarded-for')
+export async function rateLimit(req: NextRequest, limit: number): Promise<{ canAccess: boolean; count?: number; unavailable?: boolean }> {
+    let ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip');
 
     if (!ip) {
-        // Escolhi dar throw aqui, porque se não tiver o IP, não tem como aplicar o Rate Limit, e é melhor crachar do que deixar sem proteção
-        throw new Error("Unable to determine client IP address for rate limiting");
+        if (process.env.NODE_ENV !== "production") {
+            ip = "127.0.0.1";
+        } else {
+            return { canAccess: false, unavailable: true };
+        }
     }
 
     if (ip === '::1') ip = '127.0.0.1';
@@ -128,7 +138,7 @@ export async function rateLimit(req: NextRequest, limit: number): Promise<{ canA
 
     } catch (error) {
         console.error("Erro no MongoDB Rate Limit:", error);
-        // Se deu erro no RateLimit para tudo!
-        return { canAccess: false };
+        const allowInDevelopment = process.env.NODE_ENV !== "production";
+        return { canAccess: allowInDevelopment, unavailable: true };
     }
 }

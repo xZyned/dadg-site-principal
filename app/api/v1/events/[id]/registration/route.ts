@@ -12,8 +12,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/app/src/lib/auth0/Auth0Client";
-
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+import {
+  applyBackendAuthentication,
+  backendErrorStatus,
+  fetchBackend,
+  readBackendJson,
+} from "@/lib/backend";
 
 export const dynamic = "force-dynamic";
 
@@ -45,14 +49,14 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   }
 
   try {
-    const backendRes = await fetch(
-      `${BACKEND_URL}/api/v1/events/${id}/registration`,
+    const headers = new Headers({ "Content-Type": "application/json" });
+    applyBackendAuthentication(headers, req, session);
+
+    const backendRes = await fetchBackend(
+      `/api/v1/events/${encodeURIComponent(id)}/registration`,
       {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.tokenSet.accessToken}`,
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({
           ownerEmail: body.ownerEmail || session.user.email || "",
           ownerCpf: body.ownerCpf || "",
@@ -61,13 +65,14 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
     );
 
-    const data = await backendRes.json();
+    const data = await readBackendJson(backendRes);
     return NextResponse.json(data, { status: backendRes.status });
   } catch (err) {
     console.error(`[Proxy POST /api/v1/events/${id}/registration] Erro:`, err);
+    const status = backendErrorStatus(err);
     return NextResponse.json(
-      { error: "Erro ao conectar ao servidor. Tente novamente mais tarde." },
-      { status: 502 }
+      { error: status === 504 ? "Tempo limite do servidor excedido." : "Erro ao conectar ao servidor. Tente novamente mais tarde." },
+      { status }
     );
   }
 }
@@ -88,25 +93,26 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   const { id } = await params;
 
   try {
-    const backendRes = await fetch(
-      `${BACKEND_URL}/api/v1/events/${id}/registration`,
+    const headers = new Headers({ "Content-Type": "application/json" });
+    applyBackendAuthentication(headers, req, session);
+
+    const backendRes = await fetchBackend(
+      `/api/v1/events/${encodeURIComponent(id)}/registration`,
       {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${session.tokenSet.accessToken}`,
-          "Content-Type": "application/json",
-        },
+        headers,
         cache: "no-store",
       }
     );
 
-    const data = await backendRes.json();
+    const data = await readBackendJson(backendRes);
     return NextResponse.json(data, { status: backendRes.status });
   } catch (err) {
     console.error(`[Proxy DELETE /api/v1/events/${id}/registration] Erro:`, err);
+    const status = backendErrorStatus(err);
     return NextResponse.json(
-      { error: "Erro ao conectar ao servidor. Tente novamente mais tarde." },
-      { status: 502 }
+      { error: status === 504 ? "Tempo limite do servidor excedido." : "Erro ao conectar ao servidor. Tente novamente mais tarde." },
+      { status }
     );
   }
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 function toUtcIsoFromDateOnlySP(dateStr: string, addDays = 0) {
   // Interpreta "YYYY-MM-DD" como meia-noite em America/Sao_Paulo (UTC-03)
@@ -27,26 +27,14 @@ export async function GET(request: Request) {
   const end = searchParams.get("end");
 
   if (!start || !end) {
-    console.log("Parâmetros de data ausentes", { start, end });
     return NextResponse.json({ items: [] }, { status: 200 });
   }
 
   const calendarId = process.env.GOOGLE_CALENDAR_ID;
   const apiKey = process.env.GOOGLE_API_KEY;
 
-  console.log("Configurações:", {
-    calendarId: calendarId ? "Configurado" : "Não configurado",
-    apiKey: apiKey ? "Configurado" : "Não configurado",
-    start,
-    end,
-  });
-
   if (!calendarId || !apiKey) {
-    console.error("Variáveis de ambiente não configuradas:", {
-      calendarId: calendarId ? "Configurado" : "Não configurado",
-      apiKey: apiKey ? "Configurado" : "Não configurado",
-    });
-    return NextResponse.json({ items: [] }, { status: 200 });
+    return NextResponse.json({ items: [], unavailable: true }, { status: 200 });
   }
 
   const timeMin = normalizeTimeParam(start, false);
@@ -63,27 +51,16 @@ export async function GET(request: Request) {
     `&orderBy=startTime` +
     `&timeZone=${encodeURIComponent("America/Sao_Paulo")}`;
 
-  console.log("Fazendo requisição para:", url);
-
   try {
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, { next: { revalidate: 300 } });
 
     if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Erro na resposta da API do Google Calendar:", {
-        status: res.status,
-        statusText: res.statusText,
-        error: errorText,
-      });
-      return NextResponse.json({ items: [] }, { status: 200 });
+      return NextResponse.json({ items: [], unavailable: true }, { status: 200 });
     }
 
     const data = await res.json();
-    console.log("Eventos encontrados:", data.items?.length || 0);
-
-    return NextResponse.json(data, { status: 200 });
-  } catch (error) {
-    console.error("Erro ao buscar eventos:", error);
-    return NextResponse.json({ items: [] }, { status: 200 });
+    return NextResponse.json({ ...data, unavailable: false }, { status: 200 });
+  } catch {
+    return NextResponse.json({ items: [], unavailable: true }, { status: 200 });
   }
 }
