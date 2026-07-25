@@ -22,7 +22,6 @@ import {
   Sun,
   Moon,
   User,
-  Settings,
   X,
   LogOut
 } from "lucide-react";
@@ -326,18 +325,6 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
                 </div>
                 <div className="w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-slate-800 flex-shrink-0 group-hover:shadow-[0_0_8px_rgba(34,197,94,0.4)] transition-shadow"></div>
               </Link>
-              
-              <div className="flex flex-col gap-1">
-                {blogEnabled && (
-                  <Link 
-                    href="/admin/blog" 
-                    className="flex items-center gap-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 rounded-xl transition-all px-3 py-2.5"
-                    onClick={() => setMenuAberto(false)}
-                  >
-                    <Settings size={18} /> Painel Admin
-                  </Link>
-                )}
-              </div>
             </>
           ) : (
             <div className="flex flex-col gap-3">

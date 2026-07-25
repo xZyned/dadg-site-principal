@@ -12,6 +12,11 @@ export const dynamic = "force-dynamic";
 async function proxyRequest(req: NextRequest, params: { slug: string[] }) {
   const { slug } = await params;
   const path = slug.join("/");
+
+  // Bloqueia temporariamente toda operação administrativa, inclusive por acesso direto à API.
+  if (path === "admin" || path.startsWith("admin/")) {
+    return NextResponse.json({ error: "Recurso não encontrado" }, { status: 404 });
+  }
   
   // O backend deve estar em /api/v1/blog/path
   const targetUrl = new URL(`${BACKEND_URL}/api/v1/blog/${path}`);
