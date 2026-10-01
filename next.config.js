@@ -2,6 +2,8 @@
 const nextConfig = {
   images: {
     remotePatterns: [
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "www.gravatar.com", pathname: "/avatar/**" },
       {
         protocol: "https",
         hostname: "s.gravatar.com",

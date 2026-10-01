@@ -28,7 +28,7 @@ function getEventDate(dateTime?: string, date?: string): Date | null {
 }
 
 export default function UpcomingSchedulePopup() {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>([]);

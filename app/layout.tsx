@@ -27,7 +27,7 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-const SITE_URL = "https://dadg.imepac.edu.br";
+const SITE_URL = "https://www.dadg.com.br";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -87,34 +87,28 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const { blogEnabled } = await getSiteSettings();
 
   return (
-    <html 
-      lang="pt-BR" 
+    <html
+      lang="pt-BR"
       className={theme === "dark" ? "dark" : undefined}
       style={{ colorScheme: theme }}
       suppressHydrationWarning
     >
       <body className={`${inter.variable} ${playfair.variable} font-sans antialiased`}>
+        <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:z-[2000] bg-white p-3 text-blue-900">Pular para o conteúdo</a>
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
           <UpcomingSchedulePopup />
           <UserProvider isAuthenticated={Boolean(session?.user)}>
             <MenuDrawer blogEnabled={blogEnabled} />
             <MobileBottomNav blogEnabled={blogEnabled} />
             <div className="main-content pb-16 md:pb-0 flex flex-col min-h-screen">
-              <div className="flex-grow">
+              <div id="conteudo" tabIndex={-1} className="flex-grow">
                 {children}
               </div>
               <Footer />
             </div>
           </UserProvider>
-          
-          <script dangerouslySetInnerHTML={{
-            __html: `
-              document.addEventListener('contextmenu', event => event.preventDefault());
-              document.addEventListener('dragstart', event => {
-                if (event.target.nodeName === 'IMG') event.preventDefault();
-              });
-            `
-          }} />
+
+
         </ThemeProvider>
       </body>
     </html>

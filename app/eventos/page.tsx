@@ -1,3 +1,4 @@
+import { getBackendIdentity } from "@/lib/backend";
 import Link from "next/link";
 import ScheduleClient from "@/app/components/ScheduleClient";
 import { PageHero } from "@/app/components/site-sections";
@@ -29,6 +30,7 @@ export default async function EventosPage() {
   const yearMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`;
 
   let events: BackendEvent[] = [];
+  let unavailable=false;
   let userSubscribedEventIds = new Set<string>();
 
   // 1. Buscar eventos abertos do mês no backend
@@ -37,25 +39,24 @@ export default async function EventosPage() {
       `/api/v1/events/openForRegistration/${yearMonth}`,
       { cache: "no-store" }
     );
+    if (!eventsRes.ok) throw new Error("Backend unavailable");
     if (eventsRes.ok) {
       const eventsData = await readBackendJson(eventsRes);
       events = Array.isArray(eventsData.data) ? eventsData.data as BackendEvent[] : [];
     }
-  } catch (err) {
-    console.error("[EventosPage] Erro ao buscar eventos do backend:", err);
+  } catch {
+    unavailable=true;
   }
 
   // 2. Buscar inscrições do usuário logado
   const session = await auth0.getSession();
-  if (session?.user && session.tokenSet?.accessToken) {
+  if (session?.user) {
     try {
-      const ownerId = session.user.sub.includes("|")
-        ? session.user.sub.split("|")[1]
-        : session.user.sub;
+      const identity = await getBackendIdentity();
       const subsRes = await fetchBackend(
-        `/api/v1/events/user/${encodeURIComponent(ownerId)}`,
+        "/api/v1/events/user/me",
         {
-          headers: { Authorization: `Bearer ${session.tokenSet.accessToken}` },
+          headers: { Authorization: `Bearer ${identity?.accessToken}` },
           cache: "no-store",
         }
       );
@@ -124,7 +125,7 @@ export default async function EventosPage() {
         </div>
         {serializedEvents.length === 0 ? (
           <div className="glass-panel-strong p-10 text-center rounded-2xl border border-white/90 dark:border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(243,247,252,0.94)_100%)] dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.92)_0%,rgba(2,6,23,0.86)_100%)]">
-            <p className="text-slate-500 dark:text-slate-400 font-medium">Nenhum evento com inscrições abertas neste mês. Verifique em breve!</p>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">{unavailable?"Não foi possível carregar os eventos. Atualize a página para tentar novamente.":"Nenhum evento com inscrições abertas no momento."}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

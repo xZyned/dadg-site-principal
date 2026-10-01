@@ -1,26 +1,3 @@
-import { connectToDatabase } from "@/app/lib/mongodb";
-import { NextRequest } from "next/server";
-import { ObjectId } from "bson";
-import CertificateModel from "@/app/lib/models/CertificateModel";
-
-export async function DELETE(req: NextRequest, {
-    params,
-}: {
-    params: Promise<{ search: string }>
-}) {
-    await connectToDatabase()
-    const { search } = await params
-    const searchValue = search
-    if (!searchValue || !ObjectId.isValid(searchValue)) {
-        return Response.json({ message: "O parâmetro 'search' é obrigatório." }, { status: 400 });
-    }
-
-
-    const certificates = await CertificateModel.deleteOne({
-        _id: search,
-    })
-    if (certificates.deletedCount != 1) {
-        return Response.json({ message: "O certificado não foi deletado." }, { status: 404 });
-    }
-    return Response.json({ "message": `O certificado foi deletado com sucesso!`, })
+export async function DELETE() {
+  return Response.json({ error: "Operação disponível somente no painel administrativo.", code: "ADMIN_PORTAL_REQUIRED" }, { status: 410, headers: { "Cache-Control": "no-store" } });
 }

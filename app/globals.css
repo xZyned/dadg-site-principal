@@ -321,3 +321,6 @@ body::before {
   background: rgba(107, 114, 128, 0.7);
 }
 
+
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

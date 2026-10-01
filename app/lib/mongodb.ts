@@ -17,6 +17,7 @@ if (!global.mongoose) {
 const cached = global.mongoose;
 
 export async function connectToDatabase(): Promise<Mongoose> {
+    if (process.env.DB_ACCESS_DISABLED === "1") throw new Error("Database access disabled for offline verification");
     const uri = process.env.MONGODB_URI;
 
     if (!uri) {
@@ -33,6 +34,7 @@ export async function connectToDatabase(): Promise<Mongoose> {
             throw new Error('Please add MONGODB_DB to .env.local');
         }
         const options = {
+            autoIndex: false, autoCreate: false,
             maxPoolSize: process.env.maxPoolSizeValue
                 ? parseInt(process.env.maxPoolSizeValue)
                 : 10,
@@ -43,6 +45,6 @@ export async function connectToDatabase(): Promise<Mongoose> {
         cached.promise = mongoose.connect(uri, options).then((mongoose) => mongoose);
     }
 
-    cached.conn = await cached.promise;
+    try { cached.conn = await cached.promise; } catch (error) { cached.promise = null; throw error; }
     return cached.conn;
 }

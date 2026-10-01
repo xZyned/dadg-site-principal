@@ -1,3 +1,4 @@
+import { TOPICS } from "@/lib/ouvidoria-topics";
 // app/api/ouvidoria/route.ts
 import { NextResponse } from "next/server";
 
@@ -27,15 +28,7 @@ function topicKey(x: unknown) {
     .trim();
 }
 
-const ALLOWED_TOPICS = new Set(
-  [
-    "infraestrutura",
-    "problemas da turma",
-    "problemas com a coordenação",
-    "problemas com os professores",
-    "certificados",
-  ].map(topicKey)
-);
+const ALLOWED_TOPICS = TOPICS;
 
 // ===== Anti-spam: rate limit em memória (5 req/min por IP) =====
 const bucket = new Map<string, { count: number; resetAt: number }>();
@@ -189,17 +182,17 @@ export async function POST(req: Request) {
     try {
       data = JSON.parse(text);
     } catch {
-      console.error("OUVIDORIA script returned non-JSON:", text.slice(0, 500));
+      console.error("OUVIDORIA upstream invalid response");
       return NextResponse.json(
         { ok: false, error: "Falha no serviço de envio (resposta inválida do script)." },
         { status: 502 }
       );
     }
 
-    if (!data?.ok) {
-      console.error("OUVIDORIA script error:", data);
+    if (!r.ok || !data?.ok) {
+      console.error("OUVIDORIA upstream failure", r.status);
       return NextResponse.json(
-        { ok: false, error: data?.error ?? "Falha ao enviar." },
+        { ok: false, error: "Falha ao enviar. Tente novamente em instantes." },
         { status: 502 }
       );
     }

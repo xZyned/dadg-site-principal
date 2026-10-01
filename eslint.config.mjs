@@ -15,6 +15,7 @@ const safeGlobals = Object.fromEntries(
 );
 
 export default [
+  { ignores: [".next/**", ".worktrees/**", "node_modules/**", "next-env.d.ts"] },
   {
     ignores: [".next/**", "node_modules/**"],
   },

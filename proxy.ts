@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "./app/src/lib/auth0/Auth0Client";
 import { rateLimit } from "./lib/RateLimit";
 
-const RATE_LIMIT = process.env.RATE_LIMIT
-
-if (!RATE_LIMIT || isNaN(Number(RATE_LIMIT))) {
-  throw new Error("RATE_LIMIT is not defined or is not a number in environment variables");
-  // A ideia é crachar a aplicação logo na inicialização, para evitar que ela sem o Rate Limit
-}
+const RATE_LIMIT = Number(process.env.RATE_LIMIT);
+const hasRateLimit = Number.isSafeInteger(RATE_LIMIT) && RATE_LIMIT > 0;
 
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
@@ -15,6 +11,7 @@ export async function proxy(req: NextRequest) {
   const isApiMutation = pathname.startsWith("/api/") && !["GET", "HEAD", "OPTIONS"].includes(req.method);
 
   if (isApiMutation && !isAuthRoute) {
+    if (!hasRateLimit) return NextResponse.json({error:"Serviço de proteção temporariamente indisponível"},{status:503,headers:{"Cache-Control":"private, no-store"}});
     const requestOrigin = req.headers.get("origin");
     const allowedOrigins = new Set([
       req.nextUrl.origin.replace(/\/$/, ""),

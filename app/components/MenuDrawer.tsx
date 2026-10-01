@@ -34,7 +34,7 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
   const [coordenadoriasSubmenuOpen, setCoordenadoriasSubmenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [windowWidth, setWindowWidth] = useState<number>(1024);
-  const [hasNotification, setHasNotification] = useState(true);
+  const [hasNotification, setHasNotification] = useState(false);
   const pathname = usePathname() || '/';
   const { theme, setTheme } = useTheme();
   const { isAuthenticated: isLogged, displayName } = useUserContext();
@@ -77,6 +77,21 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
     };
   }, [menuAberto]);
 
+  useEffect(() => {
+    if (!menuAberto) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const menu = document.getElementById("menu-dadg");
+    const focusable = () => Array.from(menu?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') || []).filter(el => el.getClientRects().length);
+    focusable()[0]?.focus();
+    const key = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuAberto(false);
+      if (event.key === "Tab") { const items=focusable(); const first=items[0], last=items[items.length-1];
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+      }
+    };
+    document.addEventListener("keydown",key);return()=>{document.removeEventListener("keydown",key);previous?.focus();};
+  }, [menuAberto]);
   const toggleCoordenadoriasSubmenu = () => setCoordenadoriasSubmenuOpen((prev) => !prev);
 
   const coordenadoriasSubmenuItems = [
@@ -145,7 +160,7 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
         >
           <div style={{ display: "flex", alignItems: "center" }}>
             <button
-              onClick={() => setMenuAberto(true)}
+              aria-label="Abrir menu" aria-expanded={menuAberto} aria-controls="menu-dadg" onClick={() => setMenuAberto(true)}
               className="text-white hover:text-blue-200 transition-colors relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10"
             >
               <Menu size={isMobile ? 24 : 26} strokeWidth={2} />
@@ -181,7 +196,7 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
               <Link href="/certificados" style={{ color: "white", textDecoration: "none", fontSize: headerFontSize, transition: "color 0.2s hover:text-blue-200" }}>Certificados</Link>
             </div>
 
-            <button
+            <button aria-label="Abrir programação"
               onClick={() => {
                 window.dispatchEvent(new Event('open-schedule-popup'));
                 setHasNotification(false);
@@ -212,7 +227,7 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
 
       {/* Overlay Escuro quando o menu está aberto */}
       {menuAberto && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm z-[1050] transition-opacity"
           onClick={() => setMenuAberto(false)}
         />
@@ -220,25 +235,25 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
 
       {/* Drawer Menu Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-[100dvh] w-[280px] max-w-[85vw] bg-white dark:bg-slate-950 shadow-2xl z-[1100] transform transition-transform duration-300 ease-in-out flex flex-col ${menuAberto ? "translate-x-0" : "-translate-x-full"}`}
+        id="menu-dadg" style={{display:menuAberto?undefined:"none"}} hidden={!menuAberto} role="dialog" aria-modal="true" aria-label="Navegação principal" className={`fixed top-0 left-0 h-[100dvh] w-[280px] max-w-[85vw] bg-white dark:bg-slate-950 shadow-2xl z-[1100] transform transition-transform duration-300 ease-in-out flex flex-col ${menuAberto ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Cabeçalho do Sidebar (Branding) */}
-        <div 
+        <div
           className="flex items-center justify-center relative pt-4 pb-6 px-6 transition-colors duration-300"
           style={{ backgroundColor: headerBackgroundColor }}
         >
           <div className="w-24 h-24 relative flex-shrink-0 drop-shadow-md hover:scale-105 transition-transform duration-300 cursor-pointer z-10" onClick={() => setMenuAberto(false)}>
             <Link href="/">
-              <Image 
-                src="/dadg_sem_fundo.png" 
-                alt="Logo DADG" 
-                fill 
-                className="object-contain" 
+              <Image
+                src="/dadg_sem_fundo.png"
+                alt="Logo DADG"
+                fill
+                className="object-contain"
                 priority
               />
             </Link>
           </div>
-          <button 
+          <button aria-label="Fechar menu"
             onClick={() => setMenuAberto(false)}
             className="absolute top-2 right-2 p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0 z-10"
           >
@@ -248,9 +263,9 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
           {/* Onda Decorativa (Divider) */}
           <div className="absolute -bottom-[1px] left-0 w-full overflow-hidden leading-[0] z-0 pointer-events-none">
             <svg viewBox="0 0 1440 100" className="w-full h-[24px] block" preserveAspectRatio="none">
-              <path 
-                d="M0,100 L0,0 C480,100 960,100 1440,0 L1440,100 Z" 
-                className="fill-white dark:fill-slate-950" 
+              <path
+                d="M0,100 L0,0 C480,100 960,100 1440,0 L1440,100 Z"
+                className="fill-white dark:fill-slate-950"
               />
             </svg>
           </div>
@@ -259,14 +274,15 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
         {/* Links de Navegação */}
         <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
           <NavItem href="/" icon={Home} label="Início" />
+          {!isLogged && <NavItem href="/criar-conta" icon={User} label="Criar conta" />}
           <NavItem href="/certificados" icon={FileText} label="Certificados" />
           <NavItem href="/mural" icon={LayoutGrid} label="Mural" />
           <NavItem href="/eventos" icon={Calendar} label="Eventos" badge={hasNotification ? "1" : null} />
           {blogEnabled && <NavItem href="/blog" icon={BookOpen} label="Blog" />}
-          
+
           {/* Submenu de Coordenadorias */}
           <div className="mt-1">
-            <button 
+            <button
               onClick={toggleCoordenadoriasSubmenu}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all font-medium ${coordenadoriasSubmenuOpen ? "bg-slate-50 text-slate-900 dark:bg-slate-800/50 dark:text-slate-200" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-200"}`}
             >
@@ -276,10 +292,10 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
               </div>
               <ChevronDown size={18} className={`text-slate-400 transition-transform duration-300 ${coordenadoriasSubmenuOpen ? "rotate-180" : ""}`} />
             </button>
-            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${coordenadoriasSubmenuOpen ? "max-h-[300px] opacity-100 mt-1" : "max-h-0 opacity-0"}`}>
+            <div hidden={!coordenadoriasSubmenuOpen} className={`overflow-hidden transition-all duration-300 ease-in-out ${coordenadoriasSubmenuOpen ? "max-h-[300px] opacity-100 mt-1" : "max-h-0 opacity-0"}`}>
               <div className="flex flex-col gap-1 pl-4 border-l-2 border-slate-100 dark:border-slate-800 ml-6 py-2">
                 {coordenadoriasSubmenuItems.map(item => (
-                  <Link 
+                  <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setMenuAberto(false)}
@@ -298,7 +314,7 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
           </div>
 
           <div className="h-px bg-slate-100 dark:bg-slate-800 my-2 mx-2"></div>
-          
+
           <NavItem href="/ouvidoria" icon={MessageCircle} label="Ouvidoria" />
           <NavItem href="/contato" icon={Mail} label="Contato" />
           <NavItem href="/sobre" icon={HelpCircle} label="Sobre Nós" />
@@ -308,7 +324,7 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
           {isLogged ? (
             <>
-              <Link 
+              <Link
                 href="/perfil"
                 onClick={() => setMenuAberto(false)}
                 className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex items-center justify-between shadow-sm mb-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all group cursor-pointer"
@@ -328,10 +344,10 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
           ) : (
             <div className="flex flex-col gap-3">
               <div className="text-xs text-slate-500 dark:text-slate-400 text-center px-2">
-                Faça login para acessar certificados, histórico e painéis restritos.
+                Entre ou crie sua conta para acessar inscrições, certificados e histórico.
               </div>
-              <a 
-                href="/api/auth/login" 
+              <a
+                href={`/api/auth/login?returnTo=${encodeURIComponent(pathname)}`}
                 className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition-all shadow-md shadow-blue-600/20"
               >
                 Fazer Login
@@ -343,11 +359,11 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
       {/* Menu de Perfil (Renderizado fora do header para não sofrer interferência do filter: drop-shadow e permitir overlay na tela toda) */}
       {profileDropdownOpen && (
         <>
-          <div 
-            className="fixed inset-0 z-[1010]" 
+          <div
+            className="fixed inset-0 z-[1010]"
             onClick={() => setProfileDropdownOpen(false)}
           ></div>
-          <div 
+          <div
             className="fixed w-64 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[24px] shadow-[0_20px_60px_rgba(7,48,89,0.18)] z-[1020] overflow-hidden flex flex-col p-2 animate-in fade-in slide-in-from-top-2 duration-200"
             style={{ top: isMobile ? "47px" : "57px", right: "15px" }}
           >
@@ -364,8 +380,8 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
                     </div>
                   </div>
                 </div>
-                
-                <Link 
+
+                <Link
                   href="/perfil"
                   onClick={() => setProfileDropdownOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-800/50 transition-colors"
@@ -376,8 +392,8 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
             ) : (
               <div className="p-3 mb-1 border-b border-slate-100 dark:border-slate-800 flex flex-col gap-2">
                 <span className="text-sm font-semibold text-slate-900 dark:text-white px-1">Visitante</span>
-                <a 
-                  href="/api/auth/login"
+                <a
+                  href={`/api/auth/login?returnTo=${encodeURIComponent(pathname)}`}
                   className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2 text-sm font-bold transition-colors"
                 >
                   Fazer Login
@@ -385,7 +401,7 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
               </div>
             )}
 
-            <button 
+            <button
               onClick={() => {
                 setTheme(theme === 'dark' ? 'light' : 'dark');
               }}
@@ -400,7 +416,7 @@ export default function MenuDrawer({ blogEnabled = true }: { blogEnabled?: boole
             {isLogged && (
               <>
                 <div className="h-px bg-slate-100 dark:bg-slate-800 my-1 mx-2"></div>
-                <a 
+                <a
                   href="/api/auth/logout"
                   onClick={() => setProfileDropdownOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 transition-colors"

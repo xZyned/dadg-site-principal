@@ -21,6 +21,7 @@ interface TrafficLog {
 let clientPromise: Promise<MongoClient> | null = null;
 
 async function getMongoClient(): Promise<MongoClient> {
+    if (process.env.DB_ACCESS_DISABLED === "1") throw new Error("Database access disabled for offline verification");
     if (!clientPromise) {
         clientPromise = (async () => {
             const mongodbUri = process.env.MONGODB_URI;

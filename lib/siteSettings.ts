@@ -6,14 +6,14 @@ export const getSiteSettings = unstable_cache(
   async () => {
     try {
       const response = await fetchBackend("/api/v1/settings", { cache: "no-store" });
-      if (!response.ok) return { blogEnabled: true };
+      if (!response.ok) return { blogEnabled: false };
 
       const data = await readBackendJson(response);
       return {
-        blogEnabled: typeof data.blogEnabled === "boolean" ? data.blogEnabled : true,
+        blogEnabled: typeof data.blogEnabled === "boolean" ? data.blogEnabled : false,
       };
     } catch {
-      return { blogEnabled: true };
+      return { blogEnabled: false };
     }
   },
   ["site-settings"],

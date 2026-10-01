@@ -14,13 +14,7 @@ const MAX_PHONE_DIGITS = 13;
 const MIN_TURMA = 1;
 const MAX_TURMA = 999;
 
-const TOPIC_OPTIONS = [
-  { value: "infraestrutura", label: "Infraestrutura" },
-  { value: "problemas da turma", label: "Problemas da turma" },
-  { value: "problemas com a coordenacao", label: "Problemas com a coordenação" },
-  { value: "problemas com os professores", label: "Problemas com os professores" },
-  { value: "certificados", label: "Certificados" },
-] as const;
+import { TOPIC_OPTIONS } from "@/lib/ouvidoria-topics";
 
 const CERTIFICADOS_TOPIC = "certificados";
 
@@ -117,6 +111,7 @@ export default function OuvidoriaPage() {
       return;
     }
 
+    try {
     const response = await fetch("/api/ouvidoria", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -145,6 +140,7 @@ export default function OuvidoriaPage() {
     setPhone("");
     setMessage("");
     setWebsite("");
+    } catch { setStatus("error"); setError("Falha de conexão. Tente novamente ou use nosso contato."); }
   }
 
   return (

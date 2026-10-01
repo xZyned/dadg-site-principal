@@ -24,15 +24,16 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  const isDark = mounted ? resolvedTheme !== 'light' : true;
+  const isDark = mounted ? resolvedTheme !== 'light' : false;
 
   return (
     <main className={`min-h-[100dvh] w-full flex flex-col transition-colors duration-500 ${isDark ? 'bg-[#001021] text-blue-50' : 'bg-white text-gray-800'}`}>
 
+      <nav aria-label="Serviços do DADG" className="page-shell pt-28 grid grid-cols-2 gap-3 sm:grid-cols-5">{[["/certificados","Buscar certificado"],["/eventos","Eventos"],["/perfil","Minha conta"],["/processos-seletivos","Processos seletivos"],["/ouvidoria","Ouvidoria"]].map(([href,label])=><Link key={href} href={href} className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-4 font-semibold text-blue-900">{label}</Link>)}</nav>
       {/* HERO SECTION */}
       <section
         aria-label="Seção principal do Diretório Acadêmico Diogo Guimarães"
-        className="relative w-full min-h-[100dvh] pt-28 pb-20 flex flex-col items-center justify-center text-center px-6 overflow-hidden"
+        className="relative w-full min-h-[65dvh] pt-28 pb-12 flex flex-col items-center justify-center text-center px-6 overflow-hidden"
       >
         {/* Grid background */}
         <div className={`absolute inset-0 z-0 h-full w-full transition-colors duration-500 ${isDark ? 'bg-[#001021] bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)]' : 'bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)]'} bg-[size:6rem_4rem]`} />
