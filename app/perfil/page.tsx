@@ -285,6 +285,13 @@ export default function PerfilPage() {
               <Award size={16} />
               Meus certificados
             </Link>
+            <Link
+              href="/perfil/horas"
+              className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white px-5 py-2 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-300"
+            >
+              <Clock size={16} />
+              Minhas horas
+            </Link>
             <a
               href="/api/auth/logout"
               className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-2 text-sm font-semibold text-white dark:bg-slate-800"
